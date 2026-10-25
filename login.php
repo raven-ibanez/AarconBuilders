@@ -23,10 +23,10 @@ $appTagline = function_exists('get_system_setting') ? get_system_setting('compan
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sign In &bull; <?= e($appName) ?></title>
     
-    <!-- Fonts -->
+    <!-- Fonts: Plus Jakarta Sans & JetBrains Mono -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
     
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="img/logo.png">
@@ -36,19 +36,19 @@ $appTagline = function_exists('get_system_setting') ? get_system_setting('compan
     
     <style>
         :root {
-            --bw-bg: #f8fafc;
-            --bw-card: #ffffff;
-            --bw-border: #e2e8f0;
-            --bw-border-dark: #0f172a;
-            --bw-text-main: #0f172a;
-            --bw-text-muted: #64748b;
-            --bw-text-light: #94a3b8;
-            --bw-black: #0f172a;
-            --bw-black-hover: #1e293b;
-            --bw-error: #dc2626;
-            --bw-error-bg: #fef2f2;
-            --bw-error-border: #fecaca;
-            --bw-success: #16a34a;
+            --bw-bg: #f5f5f7;
+            --bw-card: rgba(255, 255, 255, 0.76);
+            --bw-border: rgba(0, 0, 0, 0.08);
+            --bw-border-dark: #dc2626;
+            --bw-text-main: #1d1d1f;
+            --bw-text-muted: #86868b;
+            --bw-text-light: #a1a1a6;
+            --bw-black: #dc2626;
+            --bw-black-hover: #b91c1c;
+            --bw-error: #ff3b30;
+            --bw-error-bg: rgba(255, 59, 48, 0.1);
+            --bw-error-border: rgba(255, 59, 48, 0.22);
+            --bw-success: #34c759;
         }
 
         * {
@@ -115,13 +115,15 @@ $appTagline = function_exists('get_system_setting') ? get_system_setting('compan
             margin-top: 0.2rem;
         }
 
-        /* Black & White Aesthetic Card */
+        /* Apple Liquid Glass Card */
         .auth-card {
-            background: var(--bw-card);
-            border: 1px solid var(--bw-border);
-            border-radius: 14px;
+            background: rgba(255, 255, 255, 0.78);
+            -webkit-backdrop-filter: blur(28px) saturate(190%);
+            backdrop-filter: blur(28px) saturate(190%);
+            border: 1px solid rgba(255, 255, 255, 0.9);
+            border-radius: 20px;
             padding: 2.25rem 2rem;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 16px 40px -10px rgba(0, 0, 0, 0.07), inset 0 1px 0 rgba(255, 255, 255, 1);
         }
 
         .auth-title {
@@ -187,20 +189,24 @@ $appTagline = function_exists('get_system_setting') ? get_system_setting('compan
         .form-input-bw {
             width: 100%;
             height: 42px;
-            background: #ffffff;
-            border: 1px solid #cbd5e1;
-            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.75);
+            -webkit-backdrop-filter: blur(12px);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
             padding: 0 38px 0 12px;
             font-size: 0.92rem;
             color: var(--bw-text-main);
             font-family: inherit;
-            transition: border-color 0.15s ease, box-shadow 0.15s ease;
+            box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.03);
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         .form-input-bw:focus {
             outline: none;
-            border-color: var(--bw-black);
-            box-shadow: 0 0 0 2px rgba(15, 23, 42, 0.08);
+            background: #ffffff;
+            border-color: #dc2626;
+            box-shadow: 0 0 0 3.5px rgba(220, 38, 38, 0.2);
         }
 
         .form-input-bw::placeholder {
@@ -270,33 +276,36 @@ $appTagline = function_exists('get_system_setting') ? get_system_setting('compan
             color: var(--bw-text-main);
         }
 
-        /* Submit Button (Crisp Black & White) */
+        /* Apple Liquid Glass Submit Button */
         .btn-submit-bw {
             width: 100%;
             height: 44px;
-            background: var(--bw-black);
+            background: linear-gradient(180deg, #dc2626 0%, #b91c1c 100%);
             color: #ffffff;
-            border: 1px solid var(--bw-black);
-            border-radius: 8px;
+            border: 1px solid rgba(220, 38, 38, 0.35);
+            border-radius: 980px;
             font-size: 0.92rem;
             font-weight: 600;
+            letter-spacing: -0.01em;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 0.4rem;
-            transition: background-color 0.15s ease, transform 0.1s ease;
+            box-shadow: 0 3px 12px rgba(220, 38, 38, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
             margin-top: 1.25rem;
             font-family: inherit;
         }
 
         .btn-submit-bw:hover {
-            background: var(--bw-black-hover);
-            border-color: var(--bw-black-hover);
+            background: linear-gradient(180deg, #ef4444 0%, #dc2626 100%);
+            box-shadow: 0 5px 16px rgba(220, 38, 38, 0.42);
+            transform: translateY(-0.5px);
         }
 
         .btn-submit-bw:active {
-            transform: scale(0.99);
+            transform: scale(0.98);
         }
 
         .btn-submit-bw:disabled {
@@ -406,6 +415,16 @@ $appTagline = function_exists('get_system_setting') ? get_system_setting('compan
                         <path d="M5 12h14M12 5l7 7-7 7"/>
                     </svg>
                 </button>
+
+                <!-- Demo Quick Fill Buttons -->
+                <div style="margin-top: 1.25rem; padding-top: 1rem; border-top: 1px solid var(--bw-border); font-size: 0.78rem;">
+                    <div style="font-weight: 600; color: var(--bw-text-muted); margin-bottom: 0.5rem; text-align: center;">System Role Logins:</div>
+                    <div style="display: flex; gap: 0.35rem; justify-content: center; flex-wrap: wrap;">
+                        <button type="button" class="btn btn-outline btn-sm" onclick="quickFill('admin', 'admin123')" style="font-size: 0.75rem; padding: 3px 8px;">Admin</button>
+                        <button type="button" class="btn btn-outline btn-sm" onclick="quickFill('accountant', 'accountant123')" style="font-size: 0.75rem; padding: 3px 8px;">Lead Accountant</button>
+                        <button type="button" class="btn btn-outline btn-sm" onclick="quickFill('outsourced', 'accountant123')" style="font-size: 0.75rem; padding: 3px 8px; border-color: #7c3aed; color: #7c3aed;">Outsourced Accountant</button>
+                    </div>
+                </div>
             </form>
         </div>
 
@@ -547,6 +566,13 @@ $appTagline = function_exists('get_system_setting') ? get_system_setting('compan
                     pwdEyeSvg.innerHTML = '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle>';
                 }
             });
+        }
+
+        // Quick Fill Helper for Demo / Testing
+        function quickFill(u, p) {
+            usernameInput.value = u;
+            passwordInput.value = p;
+            validateUsername(true);
         }
     </script>
 </body>

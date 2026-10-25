@@ -57,20 +57,44 @@ try {
         // ==========================================
         // MODULE 1: CHECK ACTIONS
         // ==========================================
+        // ==========================================
+        // MODULE 1: CHECK & VOUCHER ACTIONS
+        // The add new check and add new voucher are literally the same;
+        // The voucher module creates the check record with its voucher number.
+        // ==========================================
+        case 'add_voucher':
         case 'add_check':
-            $checkNumber = trim($_POST['check_number'] ?? '');
-            $bankName    = trim($_POST['bank_name'] ?? '');
-            $accountNo   = trim($_POST['account_number'] ?? '');
-            $payee       = trim($_POST['payee'] ?? '');
-            $amount      = floatval($_POST['amount'] ?? 0);
-            $issueDate   = trim($_POST['issue_date'] ?? date('Y-m-d'));
-            $checkDate   = trim($_POST['check_date'] ?? '');
-            $category    = trim($_POST['category'] ?? 'Materials');
-            $projectName = trim($_POST['project_name'] ?? 'General Operations');
-            $remarks     = trim($_POST['remarks'] ?? '');
+            $checkNumber     = trim($_POST['check_number'] ?? '');
+            $bankName        = trim($_POST['bank_name'] ?? '');
+            $accountNo       = trim($_POST['account_number'] ?? '');
+            $payee           = trim($_POST['payee'] ?? '');
+            $amount          = floatval($_POST['amount'] ?? 0);
+            $issueDate       = trim($_POST['issue_date'] ?? '');
+            $checkDate       = trim($_POST['check_date'] ?? '');
+            $category        = trim($_POST['category'] ?? 'Materials');
+            $projectName     = trim($_POST['project_name'] ?? 'General Operations');
+            $projectDistrict = trim($_POST['project_district'] ?? '');
+            $voucherNumber   = trim($_POST['voucher_number'] ?? '');
+            $priorityStatus  = trim($_POST['priority_status'] ?? 'Standard');
+            $remarks         = trim($_POST['remarks'] ?? '');
 
-            if (empty($checkNumber) || empty($bankName) || empty($payee) || $amount <= 0 || empty($checkDate)) {
-                respond(false, 'Please fill in all required fields (Check #, Bank, Payee, Amount, and Post-Date).', [], $redirectUrl);
+            // Validate priority_status
+            if (!in_array($priorityStatus, ['Standard', 'Prioritized', 'Hold'])) {
+                $priorityStatus = 'Standard';
+            }
+
+            // Enforce Issue Date as REQUIRED data
+            if (empty($issueDate)) {
+                respond(false, 'Validation Error: Issue Date is required and cannot be empty.', [], $redirectUrl);
+            }
+
+            if (empty($checkNumber) || empty($bankName) || empty($payee) || $amount <= 0) {
+                respond(false, 'Please fill in all required fields (Check #, Bank, Payee, Amount, and Issue Date).', [], $redirectUrl);
+            }
+
+            // Auto-assign voucher number if empty
+            if (empty($voucherNumber)) {
+                $voucherNumber = get_next_voucher_number();
             }
 
             // Check if check_number already exists
@@ -80,15 +104,99 @@ try {
                 respond(false, "Check Number '{$checkNumber}' is already registered in the system.", [], $redirectUrl);
             }
 
-            $stmt = $db->prepare('INSERT INTO checks (check_number, bank_name, account_number, payee, amount, issue_date, check_date, category, project_name, status, remarks) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, "pending", ?)');
-            $stmt->execute([$checkNumber, $bankName, $accountNo, $payee, $amount, $issueDate, $checkDate, $category, $projectName, $remarks]);
+            // Tag check automatically as Dated vs Post-Dated Check or Pending Date
+            $checkType = get_check_maturity_tag($issueDate, $checkDate);
 
-            respond(true, "Check #{$checkNumber} for {$payee} encoded successfully (Amount: " . format_money($amount) . ").", ['id' => $db->lastInsertId()], $redirectUrl);
+            // If created via Voucher module (or standard new voucher), set is_reviewed = 0 (Unreviewed / Draft)
+            // It will be sent to the Check module only when "Reviewed" is clicked.
+            $isReviewed = 0;
+
+            // Process custom fields
+            $customFields = [];
+            if (!empty($_POST['custom_fields']) && is_array($_POST['custom_fields'])) {
+                foreach ($_POST['custom_fields'] as $k => $v) {
+                    $cleanK = preg_replace('/[^a-zA-Z0-9_-]/', '', $k);
+                    if ($cleanK !== '') {
+                        $customFields[$cleanK] = trim($v);
+                    }
+                }
+            }
+            $customFieldsJson = json_encode($customFields, JSON_UNESCAPED_UNICODE);
+
+            // If check date is empty, store null or empty string
+            $stmt = $db->prepare('INSERT INTO checks (check_number, bank_name, account_number, payee, amount, issue_date, check_date, category, project_name, project_district, voucher_number, priority_status, check_type, status, remarks, is_reviewed, custom_fields) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, "pending", ?, ?, ?)');
+            $stmt->execute([$checkNumber, $bankName, $accountNo, $payee, $amount, $issueDate, !empty($checkDate) ? $checkDate : null, $category, $projectName, $projectDistrict, $voucherNumber, $priorityStatus, $checkType, $remarks, $isReviewed, $customFieldsJson]);
+
+            $lastId = $db->lastInsertId();
+            $msg = "Voucher {$voucherNumber} (Check #{$checkNumber}) for {$payee} saved successfully. Ready for review and printing CDV.";
+            respond(true, $msg, ['id' => $lastId, 'voucher_number' => $voucherNumber, 'check_number' => $checkNumber], $redirectUrl);
+            break;
+
+        case 'review_voucher':
+            $voucherId = intval($_POST['voucher_id'] ?? $_POST['check_id'] ?? 0);
+            if ($voucherId <= 0) {
+                respond(false, 'Invalid voucher selected.', [], $redirectUrl);
+            }
+
+            $stmt = $db->prepare('SELECT * FROM checks WHERE id = ?');
+            $stmt->execute([$voucherId]);
+            $chk = $stmt->fetch();
+
+            if (!$chk) {
+                respond(false, 'Voucher / check record not found.', [], $redirectUrl);
+            }
+
+            $stmt = $db->prepare('UPDATE checks SET is_reviewed = 1 WHERE id = ?');
+            $stmt->execute([$voucherId]);
+
+            // Audit log
+            $log = $db->prepare('INSERT INTO audit_logs (action_type, module, record_id, description) VALUES ("REVIEW", "VOUCHERS", ?, ?)');
+            $log->execute([$voucherId, "Voucher {$chk['voucher_number']} (Check #{$chk['check_number']}) marked as REVIEWED and routed to Check Management queue"]);
+
+            $vLabel = !empty($chk['voucher_number']) ? $chk['voucher_number'] : "Check #{$chk['check_number']}";
+            respond(true, "Voucher {$vLabel} marked as REVIEWED and successfully sent to the Check module!", ['id' => $voucherId], $redirectUrl);
             break;
 
         case 'fund_check':
-            $checkId = intval($_POST['check_id'] ?? 0);
-            $fundedBy = trim($_POST['funded_by'] ?? DEFAULT_APPROVER);
+            $checkId    = intval($_POST['check_id'] ?? 0);
+            $chequeDate = trim($_POST['cheque_date'] ?? $_POST['check_date'] ?? '');
+            $fundedBy   = trim($_POST['funded_by'] ?? DEFAULT_APPROVER);
+            $priority   = trim($_POST['priority_status'] ?? '');
+
+            if ($checkId <= 0) {
+                respond(false, 'Invalid check selected.', [], $redirectUrl);
+            }
+
+            // Trigger requirement: Must input / confirm cheque_date before status changes to Funded
+            if (empty($chequeDate)) {
+                respond(false, 'Cheque Date is mandatory before approving funding for this transaction.', [], $redirectUrl);
+            }
+
+            $stmt = $db->prepare('SELECT * FROM checks WHERE id = ?');
+            $stmt->execute([$checkId]);
+            $check = $stmt->fetch();
+
+            if (!$check) {
+                respond(false, 'Check not found.', [], $redirectUrl);
+            }
+
+            // Re-evaluate Dated vs Post-Dated tag based on confirmed cheque_date & issue_date
+            $checkType = get_check_maturity_tag($check['issue_date'], $chequeDate);
+            $newPriority = in_array($priority, ['Standard', 'Prioritized', 'Hold']) ? $priority : ($check['priority_status'] ?? 'Standard');
+
+            $stmt = $db->prepare('UPDATE checks SET status = "funded", check_date = ?, check_type = ?, priority_status = ?, funded_at = datetime("now"), funded_by = ? WHERE id = ?');
+            $stmt->execute([$chequeDate, $checkType, $newPriority, $fundedBy, $checkId]);
+
+            // Audit log
+            $log = $db->prepare('INSERT INTO audit_logs (action_type, module, record_id, description) VALUES ("FUND", "CHECKS", ?, ?)');
+            $log->execute([$checkId, "Check #{$check['check_number']} ({$check['payee']}) of " . format_money($check['amount']) . " funded on {$chequeDate} by {$fundedBy}"]);
+
+            respond(true, "Check #{$check['check_number']} marked as FUNDED with date " . format_date($chequeDate) . " and routed to Disbursement Report!", ['check_id' => $checkId, 'amount' => $check['amount'], 'check_date' => $chequeDate], $redirectUrl);
+            break;
+
+        case 'update_check_date':
+            $checkId    = intval($_POST['check_id'] ?? 0);
+            $chequeDate = trim($_POST['check_date'] ?? $_POST['cheque_date'] ?? '');
 
             if ($checkId <= 0) {
                 respond(false, 'Invalid check selected.', [], $redirectUrl);
@@ -102,14 +210,86 @@ try {
                 respond(false, 'Check not found.', [], $redirectUrl);
             }
 
-            $stmt = $db->prepare('UPDATE checks SET status = "funded", funded_at = datetime("now"), funded_by = ? WHERE id = ?');
-            $stmt->execute([$fundedBy, $checkId]);
+            $newDate = !empty($chequeDate) ? $chequeDate : null;
+            $newType = get_check_maturity_tag($check['issue_date'], $newDate);
 
-            // Audit log
-            $log = $db->prepare('INSERT INTO audit_logs (action_type, module, record_id, description) VALUES ("FUND", "CHECKS", ?, ?)');
-            $log->execute([$checkId, "Check #{$check['check_number']} ({$check['payee']}) of " . format_money($check['amount']) . " approved for funding by {$fundedBy}"]);
+            $stmt = $db->prepare('UPDATE checks SET check_date = ?, check_type = ? WHERE id = ?');
+            $stmt->execute([$newDate, $newType, $checkId]);
 
-            respond(true, "Check #{$check['check_number']} marked as FUNDED and routed to Disbursement Report!", ['check_id' => $checkId, 'amount' => $check['amount']], $redirectUrl);
+            $dateLabel = $newDate ? format_date($newDate) : 'Pending / Unknown Date';
+            respond(true, "Check #{$check['check_number']} date updated to {$dateLabel} ({$newType}).", ['check_id' => $checkId, 'check_date' => $newDate, 'check_type' => $newType], $redirectUrl);
+            break;
+
+        case 'edit_check':
+            $checkId         = intval($_POST['check_id'] ?? 0);
+            $checkNumber     = trim($_POST['check_number'] ?? '');
+            $bankName        = trim($_POST['bank_name'] ?? '');
+            $accountNo       = trim($_POST['account_number'] ?? '');
+            $payee           = trim($_POST['payee'] ?? '');
+            $amount          = floatval($_POST['amount'] ?? 0);
+            $issueDate       = trim($_POST['issue_date'] ?? '');
+            $checkDate       = trim($_POST['check_date'] ?? '');
+            $category        = trim($_POST['category'] ?? 'Materials');
+            $projectName     = trim($_POST['project_name'] ?? 'General Operations');
+            $projectDistrict = trim($_POST['project_district'] ?? '');
+            $voucherNumber   = trim($_POST['voucher_number'] ?? '');
+            $priorityStatus  = trim($_POST['priority_status'] ?? 'Standard');
+            $status          = trim($_POST['status'] ?? 'funded');
+            $remarks         = trim($_POST['remarks'] ?? '');
+
+            if ($checkId <= 0) {
+                respond(false, 'Invalid check record selected.', [], $redirectUrl);
+            }
+
+            if (empty($issueDate)) {
+                respond(false, 'Issue Date is required.', [], $redirectUrl);
+            }
+
+            if (empty($checkNumber) || empty($bankName) || empty($payee) || $amount <= 0) {
+                respond(false, 'Please fill in check number, bank, payee, and amount.', [], $redirectUrl);
+            }
+
+            if (!in_array($priorityStatus, ['Standard', 'Prioritized', 'Hold'])) {
+                $priorityStatus = 'Standard';
+            }
+
+            // Determine check type
+            $checkType = get_check_maturity_tag($issueDate, !empty($checkDate) ? $checkDate : null);
+
+            // Process custom fields
+            $customFields = [];
+            if (!empty($_POST['custom_fields']) && is_array($_POST['custom_fields'])) {
+                foreach ($_POST['custom_fields'] as $k => $v) {
+                    $cleanK = preg_replace('/[^a-zA-Z0-9_-]/', '', $k);
+                    if ($cleanK !== '') {
+                        $customFields[$cleanK] = trim($v);
+                    }
+                }
+            }
+            $customFieldsJson = json_encode($customFields, JSON_UNESCAPED_UNICODE);
+
+            $stmt = $db->prepare('UPDATE checks SET check_number = ?, bank_name = ?, account_number = ?, payee = ?, amount = ?, issue_date = ?, check_date = ?, category = ?, project_name = ?, project_district = ?, voucher_number = ?, priority_status = ?, check_type = ?, status = ?, remarks = ?, custom_fields = ? WHERE id = ?');
+            $stmt->execute([
+                $checkNumber, $bankName, $accountNo, $payee, $amount, $issueDate,
+                !empty($checkDate) ? $checkDate : null, $category, $projectName, $projectDistrict,
+                $voucherNumber, $priorityStatus, $checkType, $status, $remarks, $customFieldsJson, $checkId
+            ]);
+
+            respond(true, "Check #{$checkNumber} for {$payee} updated successfully.", ['check_id' => $checkId], $redirectUrl);
+            break;
+
+        case 'update_check_priority':
+            $checkId  = intval($_POST['check_id'] ?? 0);
+            $priority = trim($_POST['priority_status'] ?? 'Standard');
+
+            if ($checkId <= 0 || !in_array($priority, ['Standard', 'Prioritized', 'Hold'])) {
+                respond(false, 'Invalid priority status.', [], $redirectUrl);
+            }
+
+            $stmt = $db->prepare('UPDATE checks SET priority_status = ? WHERE id = ?');
+            $stmt->execute([$priority, $checkId]);
+
+            respond(true, "Check release priority updated to '{$priority}'.", ['priority_status' => $priority], $redirectUrl);
             break;
 
         case 'batch_fund_checks':
@@ -146,15 +326,16 @@ try {
             break;
 
         // ==========================================
-        // MODULE 2: CASH REQUEST ACTIONS
+        // MODULE 2: CASH REQUEST & VOUCHER ACTIONS
         // ==========================================
         case 'add_cash_request':
-            $voucherNo   = trim($_POST['voucher_no'] ?? '');
-            $requestedBy = trim($_POST['requested_by'] ?? '');
-            $deptProject = trim($_POST['department_or_project'] ?? 'Site Operations');
-            $amount      = floatval($_POST['amount'] ?? 0);
-            $purpose     = trim($_POST['purpose'] ?? '');
-            $requestDate = trim($_POST['request_date'] ?? date('Y-m-d'));
+            $voucherNo       = trim($_POST['voucher_no'] ?? '');
+            $requestedBy     = trim($_POST['requested_by'] ?? '');
+            $deptProject     = trim($_POST['department_or_project'] ?? 'Site Operations');
+            $projectDistrict = trim($_POST['project_district'] ?? '');
+            $amount          = floatval($_POST['amount'] ?? 0);
+            $purpose         = trim($_POST['purpose'] ?? '');
+            $requestDate     = trim($_POST['request_date'] ?? date('Y-m-d'));
 
             if (empty($voucherNo)) {
                 $voucherNo = 'PCV-' . date('Y') . '-' . str_pad((string)rand(1000, 9999), 4, '0', STR_PAD_LEFT);
@@ -164,10 +345,22 @@ try {
                 respond(false, 'Please fill in requester name, amount, and purpose of cash request.', [], $redirectUrl);
             }
 
-            $stmt = $db->prepare('INSERT INTO cash_requests (voucher_no, requested_by, department_or_project, amount, purpose, request_date, status) VALUES (?, ?, ?, ?, ?, ?, "pending")');
-            $stmt->execute([$voucherNo, $requestedBy, $deptProject, $amount, $purpose, $requestDate]);
+            // Process custom fields
+            $customFields = [];
+            if (!empty($_POST['custom_fields']) && is_array($_POST['custom_fields'])) {
+                foreach ($_POST['custom_fields'] as $k => $v) {
+                    $cleanK = preg_replace('/[^a-zA-Z0-9_-]/', '', $k);
+                    if ($cleanK !== '') {
+                        $customFields[$cleanK] = trim($v);
+                    }
+                }
+            }
+            $customFieldsJson = json_encode($customFields, JSON_UNESCAPED_UNICODE);
 
-            respond(true, "Cash Request {$voucherNo} for " . format_money($amount) . " submitted for Boss Approval.", ['voucher_no' => $voucherNo], $redirectUrl);
+            $stmt = $db->prepare('INSERT INTO cash_requests (voucher_no, requested_by, department_or_project, project_district, amount, purpose, request_date, status, custom_fields) VALUES (?, ?, ?, ?, ?, ?, ?, "pending", ?)');
+            $stmt->execute([$voucherNo, $requestedBy, $deptProject, $projectDistrict, $amount, $purpose, $requestDate, $customFieldsJson]);
+
+            respond(true, "Cash Voucher {$voucherNo} for " . format_money($amount) . " submitted for Boss Approval.", ['voucher_no' => $voucherNo], $redirectUrl);
             break;
 
         case 'approve_cash_request':
@@ -226,25 +419,79 @@ try {
                 respond(false, 'Invalid cash request selected.', [], $redirectUrl);
             }
 
-            $stmt = $db->prepare('UPDATE cash_requests SET status = "rejected", rejection_reason = ? WHERE id = ?');
+            $stmt = $db->prepare('UPDATE cash_requests SET status = "rejected", rejection_reason = ?, approved_at = datetime("now") WHERE id = ?');
             $stmt->execute([$reason, $requestId]);
 
             respond(true, 'Cash request marked as rejected.', [], $redirectUrl);
             break;
 
+        case 'edit_cash_request':
+            $requestId       = intval($_POST['request_id'] ?? 0);
+            $voucherNo       = trim($_POST['voucher_no'] ?? '');
+            $requestedBy     = trim($_POST['requested_by'] ?? '');
+            $deptProject     = trim($_POST['department_or_project'] ?? 'Site Operations');
+            $projectDistrict = trim($_POST['project_district'] ?? '');
+            $amount          = floatval($_POST['amount'] ?? 0);
+            $purpose         = trim($_POST['purpose'] ?? '');
+            $requestDate     = trim($_POST['request_date'] ?? date('Y-m-d'));
+            $status          = trim($_POST['status'] ?? 'approved');
+
+            if ($requestId <= 0) {
+                respond(false, 'Invalid cash expense record selected.', [], $redirectUrl);
+            }
+
+            if (empty($requestedBy) || $amount <= 0 || empty($purpose)) {
+                respond(false, 'Please fill in requester name, amount, and purpose.', [], $redirectUrl);
+            }
+
+            // Process custom fields
+            $customFields = [];
+            if (!empty($_POST['custom_fields']) && is_array($_POST['custom_fields'])) {
+                foreach ($_POST['custom_fields'] as $k => $v) {
+                    $cleanK = preg_replace('/[^a-zA-Z0-9_-]/', '', $k);
+                    if ($cleanK !== '') {
+                        $customFields[$cleanK] = trim($v);
+                    }
+                }
+            }
+            $customFieldsJson = json_encode($customFields, JSON_UNESCAPED_UNICODE);
+
+            $stmt = $db->prepare('UPDATE cash_requests SET voucher_no = ?, requested_by = ?, department_or_project = ?, project_district = ?, amount = ?, purpose = ?, request_date = ?, status = ?, custom_fields = ? WHERE id = ?');
+            $stmt->execute([$voucherNo, $requestedBy, $deptProject, $projectDistrict, $amount, $purpose, $requestDate, $status, $customFieldsJson, $requestId]);
+
+            respond(true, "Cash expense {$voucherNo} updated successfully.", ['request_id' => $requestId], $redirectUrl);
+            break;
+
         // ==========================================
-        // MODULE 3: COLLECTIONS ACTIONS
+        // MODULE 3: COLLECTIONS ACTIONS & FINANCIAL COMPUTATIONS
         // ==========================================
         case 'add_collection':
+            $contractId      = trim($_POST['contract_id'] ?? '');
             $receiptNo       = trim($_POST['receipt_no'] ?? '');
             $clientName      = trim($_POST['client_name'] ?? '');
             $projectName     = trim($_POST['project_name'] ?? 'General Operations');
-            $amount          = floatval($_POST['amount'] ?? 0);
+            $projectDistrict = trim($_POST['project_district'] ?? '');
+            $contractAmount  = floatval($_POST['contract_amount'] ?? 0);
+            $netAmount       = floatval($_POST['net_amount'] ?? 0);
+            $amount          = floatval($_POST['amount'] ?? 0); // Amount Collected
+            $expectedDate    = !empty($_POST['expected_collection_date']) ? trim($_POST['expected_collection_date']) : null;
+            $deduction       = floatval($_POST['deduction'] ?? 0);
+            $netCollections  = (isset($_POST['net_collections']) && $_POST['net_collections'] !== '') ? floatval($_POST['net_collections']) : ($amount > 0 ? max(0, $amount - $deduction) : 0);
+            $status          = trim($_POST['status'] ?? 'collected'); // 'collected' or 'in process'
+            $billingOnProcess = (isset($_POST['billing_on_process']) && $_POST['billing_on_process'] !== '') ? floatval($_POST['billing_on_process']) : ($status === 'in process' ? $amount : 0);
             $paymentMethod   = trim($_POST['payment_method'] ?? 'Bank Deposit');
             $collectionDate  = trim($_POST['collection_date'] ?? date('Y-m-d'));
             $referenceNo     = trim($_POST['reference_no'] ?? '');
             $receivedBy      = trim($_POST['received_by'] ?? 'Main Cashier');
             $notes           = trim($_POST['notes'] ?? '');
+
+            if (empty($contractId)) {
+                respond(false, 'Contract ID is required.', [], $redirectUrl);
+            }
+
+            if (!in_array($status, ['collected', 'in process'])) {
+                $status = 'collected';
+            }
 
             if (empty($receiptNo)) {
                 $receiptNo = 'OR-' . date('Y') . '-' . str_pad((string)rand(1000, 9999), 4, '0', STR_PAD_LEFT);
@@ -254,10 +501,120 @@ try {
                 respond(false, 'Please fill in client name, amount, and payment method.', [], $redirectUrl);
             }
 
-            $stmt = $db->prepare('INSERT INTO collections (receipt_no, client_name, project_name, amount, payment_method, collection_date, reference_no, received_by, notes) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)');
-            $stmt->execute([$receiptNo, $clientName, $projectName, $amount, $paymentMethod, $collectionDate, $referenceNo, $receivedBy, $notes]);
+            // Automatic Computations:
+            // Net Amount and Contract Amount defaults
+            if ($netAmount <= 0) {
+                $netAmount = ($contractAmount > 0) ? $contractAmount : $amount;
+            }
+            if ($contractAmount <= 0) {
+                $contractAmount = $netAmount;
+            }
 
-            respond(true, "Collection {$receiptNo} from {$clientName} recorded (" . format_money($amount) . "). Total Inflow updated!", ['receipt_no' => $receiptNo, 'amount' => $amount], $redirectUrl);
+            // Balance Collectible = Net Amount - Amount Collected
+            $balanceCollectible = compute_balance_collectible($netAmount, $amount);
+
+            // Percentage of collections received
+            $percentageCollected = compute_percentage_collected($contractAmount, $amount);
+
+            // Process custom fields
+            $customFields = [];
+            if (!empty($_POST['custom_fields']) && is_array($_POST['custom_fields'])) {
+                foreach ($_POST['custom_fields'] as $k => $v) {
+                    $cleanK = preg_replace('/[^a-zA-Z0-9_-]/', '', $k);
+                    if ($cleanK !== '') {
+                        $customFields[$cleanK] = trim($v);
+                    }
+                }
+            }
+            $customFieldsJson = json_encode($customFields, JSON_UNESCAPED_UNICODE);
+
+            $stmt = $db->prepare('INSERT INTO collections (contract_id, receipt_no, client_name, project_name, project_district, contract_amount, net_amount, percentage_collected, balance_collectible, amount, expected_collection_date, deduction, net_collections, billing_on_process, payment_method, collection_date, reference_no, received_by, notes, status, custom_fields) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
+            $stmt->execute([$contractId, $receiptNo, $clientName, $projectName, $projectDistrict, $contractAmount, $netAmount, $percentageCollected, $balanceCollectible, $amount, $expectedDate, $deduction, $netCollections, $billingOnProcess, $paymentMethod, $collectionDate, $referenceNo, $receivedBy, $notes, $status, $customFieldsJson]);
+
+            respond(true, "Collection {$receiptNo} [Contract: {$contractId}] from {$clientName} recorded (" . format_money($amount) . ", Status: " . ucfirst($status) . "). Inflow updated!", ['receipt_no' => $receiptNo, 'amount' => $amount], $redirectUrl);
+            break;
+
+        case 'edit_collection':
+            $collectionId    = intval($_POST['collection_id'] ?? 0);
+            $contractId      = trim($_POST['contract_id'] ?? '');
+            $receiptNo       = trim($_POST['receipt_no'] ?? '');
+            $clientName      = trim($_POST['client_name'] ?? '');
+            $projectName     = trim($_POST['project_name'] ?? 'General Operations');
+            $projectDistrict = trim($_POST['project_district'] ?? '');
+            $contractAmount  = floatval($_POST['contract_amount'] ?? 0);
+            $netAmount       = floatval($_POST['net_amount'] ?? 0);
+            $amount          = floatval($_POST['amount'] ?? 0); // Amount Collected
+            $expectedDate    = !empty($_POST['expected_collection_date']) ? trim($_POST['expected_collection_date']) : null;
+            $deduction       = floatval($_POST['deduction'] ?? 0);
+            $netCollections  = (isset($_POST['net_collections']) && $_POST['net_collections'] !== '') ? floatval($_POST['net_collections']) : ($amount > 0 ? max(0, $amount - $deduction) : 0);
+            $status          = trim($_POST['status'] ?? 'collected'); // 'collected' or 'in process'
+            $billingOnProcess = (isset($_POST['billing_on_process']) && $_POST['billing_on_process'] !== '') ? floatval($_POST['billing_on_process']) : ($status === 'in process' ? $amount : 0);
+            $paymentMethod   = trim($_POST['payment_method'] ?? 'Bank Deposit');
+            $collectionDate  = trim($_POST['collection_date'] ?? date('Y-m-d'));
+            $referenceNo     = trim($_POST['reference_no'] ?? '');
+            $receivedBy      = trim($_POST['received_by'] ?? 'Main Cashier');
+            $notes           = trim($_POST['notes'] ?? '');
+
+            if ($collectionId <= 0) {
+                respond(false, 'Invalid collection record selected.', [], $redirectUrl);
+            }
+
+            if (empty($contractId)) {
+                respond(false, 'Contract ID is required.', [], $redirectUrl);
+            }
+
+            if (!in_array($status, ['collected', 'in process'])) {
+                $status = 'collected';
+            }
+
+            if (empty($clientName) || $amount <= 0 || empty($paymentMethod)) {
+                respond(false, 'Please fill in client name, amount, and payment method.', [], $redirectUrl);
+            }
+
+            // Automatic Computations:
+            if ($netAmount <= 0) {
+                $netAmount = ($contractAmount > 0) ? $contractAmount : $amount;
+            }
+            if ($contractAmount <= 0) {
+                $contractAmount = $netAmount;
+            }
+
+            // Balance Collectible = Net Amount - Amount Collected
+            $balanceCollectible = compute_balance_collectible($netAmount, $amount);
+
+            // Percentage of collections received
+            $percentageCollected = compute_percentage_collected($contractAmount, $amount);
+
+            // Process custom fields
+            $customFields = [];
+            if (!empty($_POST['custom_fields']) && is_array($_POST['custom_fields'])) {
+                foreach ($_POST['custom_fields'] as $k => $v) {
+                    $cleanK = preg_replace('/[^a-zA-Z0-9_-]/', '', $k);
+                    if ($cleanK !== '') {
+                        $customFields[$cleanK] = trim($v);
+                    }
+                }
+            }
+            $customFieldsJson = json_encode($customFields, JSON_UNESCAPED_UNICODE);
+
+            $stmt = $db->prepare('UPDATE collections SET contract_id = ?, receipt_no = ?, client_name = ?, project_name = ?, project_district = ?, contract_amount = ?, net_amount = ?, percentage_collected = ?, balance_collectible = ?, amount = ?, expected_collection_date = ?, deduction = ?, net_collections = ?, billing_on_process = ?, payment_method = ?, collection_date = ?, reference_no = ?, received_by = ?, notes = ?, status = ?, custom_fields = ? WHERE id = ?');
+            $stmt->execute([$contractId, $receiptNo, $clientName, $projectName, $projectDistrict, $contractAmount, $netAmount, $percentageCollected, $balanceCollectible, $amount, $expectedDate, $deduction, $netCollections, $billingOnProcess, $paymentMethod, $collectionDate, $referenceNo, $receivedBy, $notes, $status, $customFieldsJson, $collectionId]);
+
+            respond(true, "Collection {$receiptNo} [Contract: {$contractId}] updated successfully (Status: " . ucfirst($status) . ", Amount: " . format_money($amount) . ").", ['collection_id' => $collectionId, 'status' => $status], $redirectUrl);
+            break;
+
+        case 'update_collection_status':
+            $collectionId = intval($_POST['collection_id'] ?? 0);
+            $newStatus    = trim($_POST['status'] ?? 'collected');
+
+            if ($collectionId <= 0 || !in_array($newStatus, ['collected', 'in process'])) {
+                respond(false, 'Invalid collection status.', [], $redirectUrl);
+            }
+
+            $stmt = $db->prepare('UPDATE collections SET status = ? WHERE id = ?');
+            $stmt->execute([$newStatus, $collectionId]);
+
+            respond(true, "Collection status updated to '{$newStatus}'.", ['status' => $newStatus], $redirectUrl);
             break;
 
         case 'delete_collection':
@@ -347,8 +704,8 @@ try {
                 respond(false, "Username '{$username}' is already in use.", [], '../admin.php?tab=tab-users');
             }
 
-            // Allowed roles: only admin and accountant
-            $validRoles = ['admin', 'accountant'];
+            // Allowed roles: admin, accountant, outsourced_accountant
+            $validRoles = ['admin', 'accountant', 'outsourced_accountant'];
             if (!in_array($role, $validRoles)) {
                 $role = 'accountant';
             }
@@ -380,7 +737,7 @@ try {
             $password = $_POST['password'] ?? '';
             $avatarColor = trim($_POST['avatar_color'] ?? '#0f172a');
 
-            if (!in_array($role, ['admin', 'accountant'])) {
+            if (!in_array($role, ['admin', 'accountant', 'outsourced_accountant'])) {
                 $role = 'accountant';
             }
 
@@ -498,6 +855,282 @@ try {
             respond(true, 'System settings and company configuration updated successfully!', [], '../admin.php?tab=tab-settings');
             break;
 
+        // ==========================================
+        // ADMIN: CMS - BANK & ROUTING CODES MANAGEMENT
+        // ==========================================
+        case 'add_bank':
+            if (!is_admin()) {
+                respond(false, 'Administrator privileges required.', [], '../admin.php');
+            }
+
+            $bankName   = trim($_POST['bank_name'] ?? '');
+            $branch     = trim($_POST['branch'] ?? '');
+            $code       = trim($_POST['code'] ?? '');
+            $accountNo  = trim($_POST['account_number'] ?? '');
+            $sortOrder  = intval($_POST['sort_order'] ?? 0);
+            $status     = trim($_POST['status'] ?? 'active');
+
+            if (empty($bankName) || empty($branch) || empty($code)) {
+                respond(false, 'Bank Name, Branch, and Starting Code are required.', [], '../admin.php?tab=tab-cms&sub=banks');
+            }
+
+            $stmt = $db->prepare('INSERT INTO system_banks (bank_name, branch, code, account_number, sort_order, status) VALUES (?, ?, ?, ?, ?, ?)');
+            $stmt->execute([$bankName, $branch, $code, $accountNo, $sortOrder, $status]);
+            $bankId = $db->lastInsertId();
+
+            $adminUser = current_user();
+            $log = $db->prepare('INSERT INTO audit_logs (action_type, module, record_id, description) VALUES ("ADD_BANK", "CMS", ?, ?)');
+            $log->execute([$bankId, "Admin '{$adminUser['username']}' added bank '{$bankName} ({$branch})' with starting code '{$code}'"]);
+
+            respond(true, "Bank '{$bankName} ({$branch})' [Code: {$code}] added successfully.", ['bank_id' => $bankId], '../admin.php?tab=tab-cms&sub=banks');
+            break;
+
+        case 'edit_bank':
+            if (!is_admin()) {
+                respond(false, 'Administrator privileges required.', [], '../admin.php');
+            }
+
+            $bankId     = intval($_POST['bank_id'] ?? 0);
+            $bankName   = trim($_POST['bank_name'] ?? '');
+            $branch     = trim($_POST['branch'] ?? '');
+            $code       = trim($_POST['code'] ?? '');
+            $accountNo  = trim($_POST['account_number'] ?? '');
+            $sortOrder  = intval($_POST['sort_order'] ?? 0);
+            $status     = trim($_POST['status'] ?? 'active');
+
+            if ($bankId <= 0 || empty($bankName) || empty($branch) || empty($code)) {
+                respond(false, 'Invalid bank data provided. Bank Name, Branch, and Starting Code are required.', [], '../admin.php?tab=tab-cms&sub=banks');
+            }
+
+            $stmt = $db->prepare('UPDATE system_banks SET bank_name = ?, branch = ?, code = ?, account_number = ?, sort_order = ?, status = ? WHERE id = ?');
+            $stmt->execute([$bankName, $branch, $code, $accountNo, $sortOrder, $status, $bankId]);
+
+            $adminUser = current_user();
+            $log = $db->prepare('INSERT INTO audit_logs (action_type, module, record_id, description) VALUES ("EDIT_BANK", "CMS", ?, ?)');
+            $log->execute([$bankId, "Admin '{$adminUser['username']}' updated bank #{$bankId} '{$bankName} ({$branch})' - Starting code: '{$code}', Status: {$status}"]);
+
+            respond(true, "Bank '{$bankName}' updated successfully (Starting Code: {$code}).", ['bank_id' => $bankId], '../admin.php?tab=tab-cms&sub=banks');
+            break;
+
+        case 'delete_bank':
+            if (!is_admin()) {
+                respond(false, 'Administrator privileges required.', [], '../admin.php');
+            }
+
+            $bankId = intval($_POST['bank_id'] ?? 0);
+            if ($bankId <= 0) {
+                respond(false, 'Invalid bank ID.', [], '../admin.php?tab=tab-cms&sub=banks');
+            }
+
+            $stmt = $db->prepare('SELECT * FROM system_banks WHERE id = ?');
+            $stmt->execute([$bankId]);
+            $bank = $stmt->fetch();
+
+            if (!$bank) {
+                respond(false, 'Bank entry not found.', [], '../admin.php?tab=tab-cms&sub=banks');
+            }
+
+            $delStmt = $db->prepare('DELETE FROM system_banks WHERE id = ?');
+            $delStmt->execute([$bankId]);
+
+            $adminUser = current_user();
+            $log = $db->prepare('INSERT INTO audit_logs (action_type, module, record_id, description) VALUES ("DELETE_BANK", "CMS", ?, ?)');
+            $log->execute([$bankId, "Admin '{$adminUser['username']}' deleted bank '{$bank['bank_name']} ({$bank['branch']})'"]);
+
+            respond(true, "Bank '{$bank['bank_name']}' removed from system.", [], '../admin.php?tab=tab-cms&sub=banks');
+            break;
+
+        // ==========================================
+        // ADMIN: CMS - SYSTEM DROPDOWN OPTIONS
+        // ==========================================
+        case 'add_dropdown_item':
+            if (!is_admin()) {
+                respond(false, 'Administrator privileges required.', [], '../admin.php');
+            }
+
+            $category  = trim($_POST['category'] ?? '');
+            $itemKey   = trim($_POST['item_key'] ?? '');
+            $itemLabel = trim($_POST['item_label'] ?? '');
+            $sortOrder = intval($_POST['sort_order'] ?? 0);
+            $status    = trim($_POST['status'] ?? 'active');
+
+            if (empty($category) || empty($itemLabel)) {
+                respond(false, 'Dropdown category and label are required.', [], '../admin.php?tab=tab-cms&sub=dropdowns');
+            }
+
+            if (empty($itemKey)) {
+                $itemKey = strtoupper(preg_replace('/[^a-zA-Z0-9_-]/', '-', $itemLabel));
+            }
+
+            $stmt = $db->prepare('INSERT INTO system_dropdowns (category, item_key, item_label, sort_order, status) VALUES (?, ?, ?, ?, ?)');
+            $stmt->execute([$category, $itemKey, $itemLabel, $sortOrder, $status]);
+            $itemId = $db->lastInsertId();
+
+            $adminUser = current_user();
+            $log = $db->prepare('INSERT INTO audit_logs (action_type, module, record_id, description) VALUES ("ADD_DROPDOWN", "CMS", ?, ?)');
+            $log->execute([$itemId, "Admin '{$adminUser['username']}' added choice '{$itemLabel}' ({$itemKey}) to '{$category}'"]);
+
+            respond(true, "Option '{$itemLabel}' added to '{$category}'.", ['item_id' => $itemId], '../admin.php?tab=tab-cms&sub=dropdowns');
+            break;
+
+        case 'edit_dropdown_item':
+            if (!is_admin()) {
+                respond(false, 'Administrator privileges required.', [], '../admin.php');
+            }
+
+            $itemId    = intval($_POST['item_id'] ?? 0);
+            $category  = trim($_POST['category'] ?? '');
+            $itemKey   = trim($_POST['item_key'] ?? '');
+            $itemLabel = trim($_POST['item_label'] ?? '');
+            $sortOrder = intval($_POST['sort_order'] ?? 0);
+            $status    = trim($_POST['status'] ?? 'active');
+
+            if ($itemId <= 0 || empty($itemLabel)) {
+                respond(false, 'Invalid dropdown item data.', [], '../admin.php?tab=tab-cms&sub=dropdowns');
+            }
+
+            $stmt = $db->prepare('UPDATE system_dropdowns SET category = ?, item_key = ?, item_label = ?, sort_order = ?, status = ? WHERE id = ?');
+            $stmt->execute([$category, $itemKey, $itemLabel, $sortOrder, $status, $itemId]);
+
+            $adminUser = current_user();
+            $log = $db->prepare('INSERT INTO audit_logs (action_type, module, record_id, description) VALUES ("EDIT_DROPDOWN", "CMS", ?, ?)');
+            $log->execute([$itemId, "Admin '{$adminUser['username']}' updated dropdown choice #{$itemId} '{$itemLabel}'"]);
+
+            respond(true, "Option '{$itemLabel}' updated successfully.", ['item_id' => $itemId], '../admin.php?tab=tab-cms&sub=dropdowns');
+            break;
+
+        case 'delete_dropdown_item':
+            if (!is_admin()) {
+                respond(false, 'Administrator privileges required.', [], '../admin.php');
+            }
+
+            $itemId = intval($_POST['item_id'] ?? 0);
+            if ($itemId <= 0) {
+                respond(false, 'Invalid dropdown item ID.', [], '../admin.php?tab=tab-cms&sub=dropdowns');
+            }
+
+            $stmt = $db->prepare('SELECT * FROM system_dropdowns WHERE id = ?');
+            $stmt->execute([$itemId]);
+            $item = $stmt->fetch();
+
+            if (!$item) {
+                respond(false, 'Dropdown item not found.', [], '../admin.php?tab=tab-cms&sub=dropdowns');
+            }
+
+            $delStmt = $db->prepare('DELETE FROM system_dropdowns WHERE id = ?');
+            $delStmt->execute([$itemId]);
+
+            $adminUser = current_user();
+            $log = $db->prepare('INSERT INTO audit_logs (action_type, module, record_id, description) VALUES ("DELETE_DROPDOWN", "CMS", ?, ?)');
+            $log->execute([$itemId, "Admin '{$adminUser['username']}' deleted dropdown option '{$item['item_label']}' from '{$item['category']}'"]);
+
+            respond(true, "Option '{$item['item_label']}' deleted.", [], '../admin.php?tab=tab-cms&sub=dropdowns');
+            break;
+
+        // ==========================================
+        // ADMIN: CMS - CUSTOM FIELDS MANAGEMENT
+        // ==========================================
+        case 'add_custom_field':
+            if (!is_admin()) {
+                respond(false, 'Administrator privileges required.', [], '../admin.php');
+            }
+
+            $module      = trim($_POST['module'] ?? 'checks');
+            $fieldLabel  = trim($_POST['field_label'] ?? '');
+            $fieldKey    = trim($_POST['field_key'] ?? '');
+            $fieldType   = trim($_POST['field_type'] ?? 'text');
+            $options     = trim($_POST['field_options'] ?? '');
+            $placeholder = trim($_POST['placeholder'] ?? '');
+            $isRequired  = !empty($_POST['is_required']) ? 1 : 0;
+            $sortOrder   = intval($_POST['sort_order'] ?? 0);
+            $status      = trim($_POST['status'] ?? 'active');
+
+            if (empty($fieldLabel)) {
+                respond(false, 'Field Label is required.', [], '../admin.php?tab=tab-cms&sub=fields');
+            }
+
+            if (empty($fieldKey)) {
+                $fieldKey = strtolower(preg_replace('/[^a-zA-Z0-9_]/', '_', $fieldLabel));
+                $fieldKey = trim($fieldKey, '_');
+            }
+
+            if (!in_array($module, ['checks', 'cash_requests', 'collections'])) {
+                $module = 'checks';
+            }
+
+            if (!in_array($fieldType, ['text', 'number', 'date', 'select', 'textarea'])) {
+                $fieldType = 'text';
+            }
+
+            $stmt = $db->prepare('INSERT INTO custom_fields (module, field_key, field_label, field_type, field_options, placeholder, is_required, sort_order, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)');
+            $stmt->execute([$module, $fieldKey, $fieldLabel, $fieldType, $options, $placeholder, $isRequired, $sortOrder, $status]);
+            $fieldId = $db->lastInsertId();
+
+            $adminUser = current_user();
+            $log = $db->prepare('INSERT INTO audit_logs (action_type, module, record_id, description) VALUES ("ADD_CUSTOM_FIELD", "CMS", ?, ?)');
+            $log->execute([$fieldId, "Admin '{$adminUser['username']}' created custom field '{$fieldLabel}' ({$fieldKey}) on '{$module}'"]);
+
+            respond(true, "Custom field '{$fieldLabel}' added to {$module}.", ['field_id' => $fieldId], '../admin.php?tab=tab-cms&sub=fields');
+            break;
+
+        case 'edit_custom_field':
+            if (!is_admin()) {
+                respond(false, 'Administrator privileges required.', [], '../admin.php');
+            }
+
+            $fieldId     = intval($_POST['field_id'] ?? 0);
+            $module      = trim($_POST['module'] ?? 'checks');
+            $fieldLabel  = trim($_POST['field_label'] ?? '');
+            $fieldKey    = trim($_POST['field_key'] ?? '');
+            $fieldType   = trim($_POST['field_type'] ?? 'text');
+            $options     = trim($_POST['field_options'] ?? '');
+            $placeholder = trim($_POST['placeholder'] ?? '');
+            $isRequired  = !empty($_POST['is_required']) ? 1 : 0;
+            $sortOrder   = intval($_POST['sort_order'] ?? 0);
+            $status      = trim($_POST['status'] ?? 'active');
+
+            if ($fieldId <= 0 || empty($fieldLabel)) {
+                respond(false, 'Invalid custom field data.', [], '../admin.php?tab=tab-cms&sub=fields');
+            }
+
+            $stmt = $db->prepare('UPDATE custom_fields SET module = ?, field_key = ?, field_label = ?, field_type = ?, field_options = ?, placeholder = ?, is_required = ?, sort_order = ?, status = ? WHERE id = ?');
+            $stmt->execute([$module, $fieldKey, $fieldLabel, $fieldType, $options, $placeholder, $isRequired, $sortOrder, $status, $fieldId]);
+
+            $adminUser = current_user();
+            $log = $db->prepare('INSERT INTO audit_logs (action_type, module, record_id, description) VALUES ("EDIT_CUSTOM_FIELD", "CMS", ?, ?)');
+            $log->execute([$fieldId, "Admin '{$adminUser['username']}' updated custom field #{$fieldId} '{$fieldLabel}'"]);
+
+            respond(true, "Custom field '{$fieldLabel}' updated successfully.", ['field_id' => $fieldId], '../admin.php?tab=tab-cms&sub=fields');
+            break;
+
+        case 'delete_custom_field':
+            if (!is_admin()) {
+                respond(false, 'Administrator privileges required.', [], '../admin.php');
+            }
+
+            $fieldId = intval($_POST['field_id'] ?? 0);
+            if ($fieldId <= 0) {
+                respond(false, 'Invalid field ID.', [], '../admin.php?tab=tab-cms&sub=fields');
+            }
+
+            $stmt = $db->prepare('SELECT * FROM custom_fields WHERE id = ?');
+            $stmt->execute([$fieldId]);
+            $field = $stmt->fetch();
+
+            if (!$field) {
+                respond(false, 'Custom field not found.', [], '../admin.php?tab=tab-cms&sub=fields');
+            }
+
+            $delStmt = $db->prepare('DELETE FROM custom_fields WHERE id = ?');
+            $delStmt->execute([$fieldId]);
+
+            $adminUser = current_user();
+            $log = $db->prepare('INSERT INTO audit_logs (action_type, module, record_id, description) VALUES ("DELETE_CUSTOM_FIELD", "CMS", ?, ?)');
+            $log->execute([$fieldId, "Admin '{$adminUser['username']}' deleted custom field '{$field['field_label']}' from '{$field['module']}'"]);
+
+            respond(true, "Custom field '{$field['field_label']}' deleted.", [], '../admin.php?tab=tab-cms&sub=fields');
+            break;
+
         case 'optimize_database':
             if (!is_admin()) {
                 respond(false, 'Administrator privileges required.', [], '../admin.php');
@@ -515,9 +1148,9 @@ try {
                 $log = $db->prepare('INSERT INTO audit_logs (action_type, module, record_id, description) VALUES ("OPTIMIZE_DB", "SYSTEM", 0, ?)');
                 $log->execute(["Admin '{$adminUser['username']}' executed database optimization / vacuum routine."]);
 
-                respond(true, 'Database maintenance and optimization completed successfully!', [], '../admin.php?tab=tab-system');
+                respond(true, 'Database maintenance and optimization completed successfully!', [], '../admin.php?tab=tab-settings');
             } catch (Exception $e) {
-                respond(false, 'Optimization failed: ' . $e->getMessage(), [], '../admin.php?tab=tab-system');
+                respond(false, 'Optimization failed: ' . $e->getMessage(), [], '../admin.php?tab=tab-settings');
             }
             break;
 
@@ -562,9 +1195,9 @@ try {
                 $log = $db->prepare('INSERT INTO audit_logs (action_type, module, record_id, description) VALUES ("RESET_DATA", "SYSTEM", 0, ?)');
                 $log->execute(["Admin '{$adminUser['username']}' reset all financial transaction data (checks, cash vouchers, collections)."]);
 
-                respond(true, 'System data reset successfully! All checks, vouchers, and collections have been cleared to ₱0.00.', [], '../admin.php?tab=tab-system');
+                respond(true, 'System data reset successfully! All checks, vouchers, and collections have been cleared to ₱0.00.', [], '../admin.php?tab=tab-settings');
             } catch (Exception $e) {
-                respond(false, 'Data reset failed: ' . $e->getMessage(), [], '../admin.php?tab=tab-system');
+                respond(false, 'Data reset failed: ' . $e->getMessage(), [], '../admin.php?tab=tab-settings');
             }
             break;
 

@@ -60,19 +60,18 @@ $pendingChecks = $db->query("SELECT * FROM checks WHERE status = 'pending' ORDER
 $pendingCashRequests = $db->query("SELECT * FROM cash_requests WHERE status = 'pending' ORDER BY request_date DESC LIMIT 5")->fetchAll();
 ?>
 
-<!-- Page Header
+<!-- Page Header -->
 <div class="page-header no-print">
     <div>
         <h1 class="page-title">Financial Dashboard</h1>
-        <p class="page-subtitle">Cash balance and daily approvals</p>
     </div>
     <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
-        <button class="btn btn-primary btn-sm" data-open-modal="modalAddCheck">+ Check</button>
+        <button class="btn btn-primary btn-sm" data-open-modal="modalAddCheck" data-modal-title="New Check &amp; Voucher" data-submit-label="Save Check &amp; Voucher">+ Check / Voucher</button>
         <button class="btn btn-outline btn-sm" data-open-modal="modalAddCashRequest">+ Cash Request</button>
         <button class="btn btn-success btn-sm" data-open-modal="modalAddCollection">+ Collection</button>
     </div>
 </div>
- -->
+
 <!-- Minimalist Net Balance Hero -->
 <div class="balance-card">
     <div class="balance-card-grid">
@@ -161,7 +160,9 @@ $pendingCashRequests = $db->query("SELECT * FROM cash_requests WHERE status = 'p
                     <table class="data-table">
                         <thead>
                             <tr>
-                                <th>Date</th>
+                                <th>Issue Date</th>
+                                <th>Cheque Date</th>
+                                <th>Type</th>
                                 <th>Check # &amp; Bank</th>
                                 <th>Payee</th>
                                 <th style="text-align: right;">Amount</th>
@@ -170,17 +171,32 @@ $pendingCashRequests = $db->query("SELECT * FROM cash_requests WHERE status = 'p
                         </thead>
                         <tbody>
                             <?php foreach ($pendingChecks as $chk): ?>
+                                <?php $typeTag = get_check_maturity_tag($chk['issue_date'], $chk['check_date']); ?>
                                 <tr>
-                                    <td style="font-weight: 600;"><?= format_date($chk['check_date']) ?></td>
+                                    <td style="font-weight: 600; color: var(--text-main);"><?= format_date($chk['issue_date']) ?></td>
+                                    <td style="font-weight: 600; color: #1e3a8a;"><?= format_date($chk['check_date']) ?></td>
                                     <td>
-                                        <span class="mono"><?= e($chk['check_number']) ?></span><br>
+                                        <?php if ($typeTag === 'Post-Dated Check'): ?>
+                                            <span class="badge badge-pdc">⏳ PDC</span>
+                                        <?php else: ?>
+                                            <span class="badge badge-dated">📅 Dated</span>
+                                        <?php endif; ?>
+                                    </td>
+                                    <td>
+                                        <span class="mono" style="font-weight: 700;"><?= e($chk['check_number']) ?></span><br>
                                         <small style="color: var(--text-muted);"><?= e($chk['bank_name']) ?></small>
                                     </td>
                                     <td><?= e($chk['payee']) ?></td>
                                     <td class="amount-col"><?= format_money($chk['amount']) ?></td>
                                     <td class="action-cell" style="text-align: center;">
-                                        <button class="btn btn-primary btn-sm btn-ajax-fund" data-check-id="<?= $chk['id'] ?>"
-                                            data-check-num="<?= e($chk['check_number']) ?>">
+                                        <button class="btn btn-primary btn-sm btn-ajax-fund" 
+                                            data-check-id="<?= $chk['id'] ?>"
+                                            data-check-num="<?= e($chk['check_number']) ?>"
+                                            data-payee="<?= e($chk['payee']) ?>"
+                                            data-amount="<?= $chk['amount'] ?>"
+                                            data-issue-date="<?= e($chk['issue_date']) ?>"
+                                            data-check-date="<?= e($chk['check_date']) ?>"
+                                            data-priority="<?= e($chk['priority_status'] ?? 'Standard') ?>">
                                             Fund
                                         </button>
                                     </td>

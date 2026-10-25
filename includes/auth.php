@@ -33,8 +33,36 @@ function is_admin(): bool {
  */
 function is_accountant(): bool {
     $user = current_user();
-    return $user !== null && isset($user['role']) && $user['role'] === 'accountant';
+    return $user !== null && isset($user['role']) && ($user['role'] === 'accountant' || $user['role'] === 'outsourced_accountant');
 }
+
+/**
+ * Check if the logged-in user is specifically an outsourced accountant
+ */
+function is_outsourced_accountant(): bool {
+    $user = current_user();
+    return $user !== null && isset($user['role']) && $user['role'] === 'outsourced_accountant';
+}
+
+/**
+ * Get human-readable role label
+ */
+function get_user_role_label(?string $role = null): string {
+    if ($role === null) {
+        $user = current_user();
+        $role = $user['role'] ?? 'accountant';
+    }
+    switch ($role) {
+        case 'admin':
+            return 'Administrator';
+        case 'outsourced_accountant':
+            return 'Outsourced Accountant';
+        case 'accountant':
+        default:
+            return 'Lead Accountant';
+    }
+}
+
 
 /**
  * Enforce authentication on protected pages
@@ -97,7 +125,7 @@ function authenticate_user(string $usernameOrEmail, string $password): array {
         'full_name'    => $user['full_name'],
         'email'        => $user['email'],
         'role'         => $user['role'],
-        'avatar_color' => $user['avatar_color'] ?? '#2563eb'
+        'avatar_color' => $user['avatar_color'] ?? '#dc2626'
     ];
 
     // Log to audit log

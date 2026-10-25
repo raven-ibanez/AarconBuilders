@@ -1,6 +1,7 @@
 <?php
 /**
  * Aarcon Builders - Master Header Layout
+ * Redesigned with Left Sidebar Navigation & Clean Executive Interface
  */
 
 require_once __DIR__ . '/../config/config.php';
@@ -25,6 +26,14 @@ try {
 $currentPage = basename($_SERVER['PHP_SELF']);
 $flash = get_flash();
 $dynamicAppName = get_app_name();
+
+// User profile data
+$userInitials = 'U';
+$userColor = '#dc2626';
+if ($currentUser) {
+    $userInitials = strtoupper(substr($currentUser['full_name'], 0, 1) . (strpos($currentUser['full_name'], ' ') !== false ? substr($currentUser['full_name'], strpos($currentUser['full_name'], ' ') + 1, 1) : ''));
+    $userColor = $currentUser['avatar_color'] ?? '#dc2626';
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -37,129 +46,274 @@ $dynamicAppName = get_app_name();
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="img/logo.png">
 
-    <!-- CSS -->
-    <link rel="stylesheet" href="assets/css/style.css">
+    <!-- CSS Design System -->
+    <link rel="stylesheet" href="assets/css/style.css?v=<?= file_exists(__DIR__ . '/../assets/css/style.css') ? filemtime(__DIR__ . '/../assets/css/style.css') : time() ?>">
 </head>
 
 <body>
 
-    <!-- Top Navigation -->
-    <nav class="navbar" id="mainNavbar">
-        <div class="nav-container">
-            <a href="<?= is_admin() ? 'admin.php' : 'index.php' ?>" class="brand">
-                <img src="img/logo.png" alt="<?= e($dynamicAppName) ?> Logo" class="brand-logo-nav">
-                <span class="brand-title"><?= e($dynamicAppName) ?></span>
-            </a>
+<div class="app-layout">
 
-            <ul class="nav-links">
-                <?php if (is_admin()): ?>
-                    <li>
-                        <a href="admin.php" class="nav-link <?= $currentPage === 'admin.php' ? 'active' : '' ?>">
-                            System Administration
-                        </a>
-                    </li>
-                    <li>
-                        <a href="index.php" class="nav-link <?= $currentPage === 'index.php' ? 'active' : '' ?>">
-                            Financial Overview
-                        </a>
-                    </li>
-                    <li>
-                        <a href="disbursement_report.php"
-                            class="nav-link <?= $currentPage === 'disbursement_report.php' ? 'active' : '' ?>">
-                            Disbursement Report
-                        </a>
-                    </li>
-                <?php else: ?>
-                    <!-- Accountant Operational Modules -->
-                    <li>
-                        <a href="index.php" class="nav-link <?= $currentPage === 'index.php' ? 'active' : '' ?>">
-                            Dashboard
-                        </a>
-                    </li>
-                    <li>
-                        <a href="checks.php" class="nav-link <?= $currentPage === 'checks.php' ? 'active' : '' ?>">
-                            Checks
-                            <?php if ($pendingChecksCount > 0): ?>
-                                <span class="nav-counter"><?= $pendingChecksCount ?></span>
-                            <?php endif; ?>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="cash_requests.php"
-                            class="nav-link <?= $currentPage === 'cash_requests.php' ? 'active' : '' ?>">
-                            Cash Requests
-                            <?php if ($pendingCashCount > 0): ?>
-                                <span class="nav-counter"><?= $pendingCashCount ?></span>
-                            <?php endif; ?>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="collections.php"
-                            class="nav-link <?= $currentPage === 'collections.php' ? 'active' : '' ?>">
-                            Collections
-                        </a>
-                    </li>
-                    <li>
-                        <a href="disbursement_report.php"
-                            class="nav-link <?= $currentPage === 'disbursement_report.php' ? 'active' : '' ?>">
-                            Disbursement Report
-                        </a>
-                    </li>
-                <?php endif; ?>
-            </ul>
-            <!--
-            <div class="no-print" style="display: flex; align-items: center; gap: 0.75rem;">
-                <button class="btn btn-outline btn-sm" onclick="window.print();" title="Print this view">Print</button>
--->
-            <?php if ($currentUser): ?>
-                <?php
-                $userInitials = strtoupper(substr($currentUser['full_name'], 0, 1) . (strpos($currentUser['full_name'], ' ') !== false ? substr($currentUser['full_name'], strpos($currentUser['full_name'], ' ') + 1, 1) : ''));
-                $userColor = $currentUser['avatar_color'] ?? '#2563eb';
-                ?>
-                <div class="user-nav-profile"
-                    style="display: flex; align-items: center; gap: 0.5rem; padding-left: 0.5rem; border-left: 1px solid var(--border-color);">
-                    <div
-                        style="width: 32px; height: 32px; border-radius: 50%; background: <?= e($userColor) ?>; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.8rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
-                        <?= e($userInitials) ?>
-                    </div>
-                    <div class="user-nav-details" style="display: flex; flex-direction: column; line-height: 1.2;">
-                        <span style="font-weight: 600; font-size: 0.82rem; color: var(--text-main);">
-                            <?= e($currentUser['full_name']) ?>
-                        </span>
-                        <span style="font-size: 0.7rem; color: var(--text-muted); text-transform: capitalize;">
-                            <?= e($currentUser['role']) ?>
-                        </span>
-                    </div>
-                    <a href="logout.php" class="btn btn-outline btn-sm"
-                        style="padding: 0.25rem 0.55rem; font-size: 0.75rem; margin-left: 0.25rem;"
-                        title="Sign out of <?= e($currentUser['username']) ?>">
-                        Logout
+    <!-- ======================================================== -->
+    <!-- LEFT SIDEBAR NAVIGATION -->
+    <!-- ======================================================== -->
+    <aside class="app-sidebar no-print" id="appSidebar">
+        <!-- Sidebar Brand Header -->
+        <div class="sidebar-brand">
+            <a href="<?= is_admin() ? 'admin.php' : 'index.php' ?>" class="sidebar-brand-link">
+                <img src="img/logo.png" alt="<?= e($dynamicAppName) ?> Logo" class="sidebar-logo">
+                <div class="sidebar-brand-text">
+                    <span class="sidebar-title"><?= e($dynamicAppName) ?></span>
+                    <span class="sidebar-subtitle">General Contractor &bull; ERP</span>
+                </div>
+            </a>
+        </div>
+
+        <!-- Navigation Menu -->
+        <nav class="sidebar-nav">
+            <?php if (is_admin()): ?>
+                <!-- ADMIN NAVIGATION -->
+                <div class="sidebar-section">
+                    <span class="sidebar-heading">Core</span>
+                    <a href="index.php" class="sidebar-link <?= $currentPage === 'index.php' ? 'active' : '' ?>">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+                        <span>Dashboard</span>
+                    </a>
+                </div>
+
+                <div class="sidebar-section">
+                    <span class="sidebar-heading">Disbursements</span>
+                    <a href="vouchers.php" class="sidebar-link <?= $currentPage === 'vouchers.php' ? 'active' : '' ?>">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+                        <span>Check Vouchers</span>
+                    </a>
+                    <a href="checks.php" class="sidebar-link <?= $currentPage === 'checks.php' ? 'active' : '' ?>">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"></rect><line x1="2" y1="10" x2="22" y2="10"></line><line x1="6" y1="15" x2="10" y2="15"></line></svg>
+                        <span>Checks</span>
+                        <?php if ($pendingChecksCount > 0): ?>
+                            <span class="sidebar-badge"><?= $pendingChecksCount ?></span>
+                        <?php endif; ?>
+                    </a>
+                    <a href="cash_requests.php" class="sidebar-link <?= $currentPage === 'cash_requests.php' ? 'active' : '' ?>">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"></rect><circle cx="12" cy="12" r="2"></circle><path d="M6 12h.01M18 12h.01"></path></svg>
+                        <span>Cash Requests</span>
+                        <?php if ($pendingCashCount > 0): ?>
+                            <span class="sidebar-badge"><?= $pendingCashCount ?></span>
+                        <?php endif; ?>
+                    </a>
+                </div>
+
+                <div class="sidebar-section">
+                    <span class="sidebar-heading">Billings &amp; Inflow</span>
+                    <a href="collections.php" class="sidebar-link <?= $currentPage === 'collections.php' ? 'active' : '' ?>">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"></path><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"></path><path d="M18 12a2 2 0 0 0 0 4h4v-4z"></path></svg>
+                        <span>Collections</span>
+                    </a>
+                    <a href="collection_report.php" class="sidebar-link <?= $currentPage === 'collection_report.php' ? 'active' : '' ?>">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="12" y1="18" x2="12" y2="12"></line><line x1="9" y1="15" x2="15" y2="15"></line></svg>
+                        <span>Cashed Report</span>
+                    </a>
+                </div>
+
+                <div class="sidebar-section">
+                    <span class="sidebar-heading">Reports</span>
+                    <a href="disbursement_report.php" class="sidebar-link <?= $currentPage === 'disbursement_report.php' ? 'active' : '' ?>">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+                        <span>Disbursement Report</span>
+                    </a>
+                </div>
+
+                <div class="sidebar-section">
+                    <span class="sidebar-heading">System</span>
+                    <a href="admin.php" class="sidebar-link <?= $currentPage === 'admin.php' ? 'active' : '' ?>">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                        <span>Administration</span>
+                    </a>
+                </div>
+
+            <?php elseif (is_outsourced_accountant()): ?>
+                <!-- OUTSOURCED ACCOUNTANT NAVIGATION -->
+                <div class="sidebar-section">
+                    <span class="sidebar-heading">Billings &amp; Inflow</span>
+                    <a href="collections.php" class="sidebar-link <?= $currentPage === 'collections.php' ? 'active' : '' ?>">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"></path><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"></path><path d="M18 12a2 2 0 0 0 0 4h4v-4z"></path></svg>
+                        <span>Collections</span>
+                    </a>
+                    <a href="collection_report.php" class="sidebar-link <?= $currentPage === 'collection_report.php' ? 'active' : '' ?>">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="12" y1="18" x2="12" y2="12"></line><line x1="9" y1="15" x2="15" y2="15"></line></svg>
+                        <span>Cashed Report</span>
+                    </a>
+                </div>
+
+                <div class="sidebar-section">
+                    <span class="sidebar-heading">Operations</span>
+                    <a href="cash_requests.php" class="sidebar-link <?= $currentPage === 'cash_requests.php' ? 'active' : '' ?>">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"></rect><circle cx="12" cy="12" r="2"></circle><path d="M6 12h.01M18 12h.01"></path></svg>
+                        <span>Cash Requests</span>
+                        <?php if ($pendingCashCount > 0): ?>
+                            <span class="sidebar-badge"><?= $pendingCashCount ?></span>
+                        <?php endif; ?>
+                    </a>
+                    <a href="vouchers.php" class="sidebar-link <?= $currentPage === 'vouchers.php' ? 'active' : '' ?>">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+                        <span>Vouchers</span>
+                    </a>
+                    <a href="checks.php" class="sidebar-link <?= $currentPage === 'checks.php' ? 'active' : '' ?>">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"></rect><line x1="2" y1="10" x2="22" y2="10"></line><line x1="6" y1="15" x2="10" y2="15"></line></svg>
+                        <span>Checks</span>
+                    </a>
+                </div>
+
+                <div class="sidebar-section">
+                    <span class="sidebar-heading">Reports</span>
+                    <a href="disbursement_report.php" class="sidebar-link <?= $currentPage === 'disbursement_report.php' ? 'active' : '' ?>">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+                        <span>Disbursement Report</span>
+                    </a>
+                </div>
+
+            <?php else: ?>
+                <!-- LEAD ACCOUNTANT / STANDARD NAVIGATION -->
+                <div class="sidebar-section">
+                    <span class="sidebar-heading">Core</span>
+                    <a href="index.php" class="sidebar-link <?= $currentPage === 'index.php' ? 'active' : '' ?>">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+                        <span>Dashboard</span>
+                    </a>
+                </div>
+
+                <div class="sidebar-section">
+                    <span class="sidebar-heading">Disbursements</span>
+                    <a href="vouchers.php" class="sidebar-link <?= $currentPage === 'vouchers.php' ? 'active' : '' ?>">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+                        <span>Check Vouchers</span>
+                    </a>
+                    <a href="checks.php" class="sidebar-link <?= $currentPage === 'checks.php' ? 'active' : '' ?>">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"></rect><line x1="2" y1="10" x2="22" y2="10"></line><line x1="6" y1="15" x2="10" y2="15"></line></svg>
+                        <span>Checks</span>
+                        <?php if ($pendingChecksCount > 0): ?>
+                            <span class="sidebar-badge"><?= $pendingChecksCount ?></span>
+                        <?php endif; ?>
+                    </a>
+                    <a href="cash_requests.php" class="sidebar-link <?= $currentPage === 'cash_requests.php' ? 'active' : '' ?>">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"></rect><circle cx="12" cy="12" r="2"></circle><path d="M6 12h.01M18 12h.01"></path></svg>
+                        <span>Cash Requests</span>
+                        <?php if ($pendingCashCount > 0): ?>
+                            <span class="sidebar-badge"><?= $pendingCashCount ?></span>
+                        <?php endif; ?>
+                    </a>
+                </div>
+
+                <div class="sidebar-section">
+                    <span class="sidebar-heading">Billings &amp; Inflow</span>
+                    <a href="collections.php" class="sidebar-link <?= $currentPage === 'collections.php' ? 'active' : '' ?>">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"></path><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"></path><path d="M18 12a2 2 0 0 0 0 4h4v-4z"></path></svg>
+                        <span>Collections</span>
+                    </a>
+                    <a href="collection_report.php" class="sidebar-link <?= $currentPage === 'collection_report.php' ? 'active' : '' ?>">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="12" y1="18" x2="12" y2="12"></line><line x1="9" y1="15" x2="15" y2="15"></line></svg>
+                        <span>Cashed Report</span>
+                    </a>
+                </div>
+
+                <div class="sidebar-section">
+                    <span class="sidebar-heading">Reports</span>
+                    <a href="disbursement_report.php" class="sidebar-link <?= $currentPage === 'disbursement_report.php' ? 'active' : '' ?>">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+                        <span>Disbursement Report</span>
                     </a>
                 </div>
             <?php endif; ?>
-        </div>
-        </div>
-    </nav>
+        </nav>
 
-    <!-- Main Content -->
-    <main class="main-wrapper">
-
-        <!-- Flash Alert -->
-        <?php if ($flash): ?>
-            <div class="alert alert-<?= e($flash['type']) ?>" id="flashAlert">
-                <span><?= e($flash['message']) ?></span>
-                <button type="button" style="background:none; border:none; color:inherit; cursor:pointer; font-weight:600;"
-                    onclick="document.getElementById('flashAlert').remove();">&times;</button>
+        <!-- Sidebar User Footer -->
+        <?php if ($currentUser): ?>
+            <div class="sidebar-footer">
+                <div class="sidebar-user">
+                    <div class="sidebar-avatar" style="background: <?= e($userColor) ?>;">
+                        <?= e($userInitials) ?>
+                    </div>
+                    <div class="sidebar-user-info">
+                        <div class="sidebar-user-name" title="<?= e($currentUser['full_name']) ?>"><?= e($currentUser['full_name']) ?></div>
+                        <div class="sidebar-user-role"><?= e(get_user_role_label($currentUser['role'])) ?></div>
+                    </div>
+                    <a href="logout.php" class="sidebar-logout-btn" title="Sign out of <?= e($currentUser['username']) ?>">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                    </a>
+                </div>
             </div>
         <?php endif; ?>
+    </aside>
 
-        <!-- Printable Header -->
-        <div class="print-header" style="display: none;">
-            <div
-                style="display: flex; align-items: center; justify-content: center; gap: 0.75rem; margin-bottom: 0.25rem;">
-                <img src="img/logo.png" alt="Logo" style="width: 36px; height: 36px; object-fit: contain;">
-                <div class="print-title"><?= e($dynamicAppName) ?></div>
+    <!-- Mobile Drawer Backdrop -->
+    <div class="sidebar-backdrop no-print" id="sidebarBackdrop"></div>
+
+    <!-- App Main Workspace -->
+    <div class="app-main">
+        <!-- Top App Bar -->
+        <header class="app-topbar no-print">
+            <div class="topbar-left">
+                <button type="button" class="sidebar-toggle-btn" id="sidebarToggle" aria-label="Toggle navigation">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+                </button>
+                <div class="topbar-breadcrumb">
+                    <span class="breadcrumb-app"><?= e($dynamicAppName) ?></span>
+                    <span class="breadcrumb-sep">&rsaquo;</span>
+                    <span class="breadcrumb-current"><?= isset($pageTitle) ? e($pageTitle) : 'Overview' ?></span>
+                </div>
             </div>
-            <div class="print-sub"><?= isset($pageTitle) ? e($pageTitle) : 'Disbursement & Cash Report' ?> &bull;
-                Printed: <?= date('M d, Y h:i A') ?></div>
-        </div>
+            <div class="topbar-right">
+                <div class="topbar-status">
+                    <span class="status-indicator-dot"></span>
+                    <span>Live Ledger &bull; <?= date('M d, Y') ?></span>
+                </div>
+                <?php if ($currentUser): ?>
+                    <a href="logout.php" class="btn btn-outline btn-sm topbar-logout" title="Sign out">
+                        Logout
+                    </a>
+                <?php endif; ?>
+            </div>
+        </header>
+
+        <!-- Main Workspace -->
+        <main class="main-wrapper">
+
+            <!-- Flash Alert -->
+            <?php if ($flash): ?>
+                <div class="alert alert-<?= e($flash['type']) ?>" id="flashAlert">
+                    <span><?= e($flash['message']) ?></span>
+                    <button type="button" style="background:none; border:none; color:inherit; cursor:pointer; font-weight:600;"
+                        onclick="document.getElementById('flashAlert').remove();">&times;</button>
+                </div>
+            <?php endif; ?>
+
+            <!-- Official Printable Company Letterhead -->
+            <div class="print-header" style="display: none;">
+                <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid #000000; padding-bottom: 8px; margin-bottom: 8px; width: 100%; box-sizing: border-box;">
+                    <div style="display: flex; align-items: center; gap: 14px;">
+                        <img src="img/logo.png" alt="Aarcon Builders Logo" style="width: 44px; height: 44px; object-fit: contain;">
+                        <div>
+                            <div style="font-family: 'Times New Roman', Times, Georgia, serif; font-size: 18pt; font-weight: 900; letter-spacing: 0.04em; color: #000000; text-transform: uppercase; line-height: 1.1;">
+                                AARCON BUILDERS
+                            </div>
+                            <div style="font-size: 8.5pt; font-weight: 800; letter-spacing: 0.1em; color: #000000; text-transform: uppercase; margin-top: 1px;">
+                                GENERAL CONTRACTOR
+                            </div>
+                            <div style="font-size: 7.5pt; color: #222222; line-height: 1.25; margin-top: 2px;">
+                                Unit 203, FSS Bldg. I, #20 Sct. Tuazon cor. Sct. Castor Sts., Quezon City &bull; Telefax: 8441-8225 &bull; Email: aarconbuilders@gmail.com
+                            </div>
+                        </div>
+                    </div>
+                    <div style="text-align: right; color: #000000;">
+                        <div class="print-report-title" style="font-size: 11.5pt; font-weight: 900; text-transform: uppercase; letter-spacing: 0.04em; color: #000000;">
+                            <?= isset($pageTitle) ? e($pageTitle) : 'Official Financial Report' ?>
+                        </div>
+                        <div style="font-size: 8pt; font-weight: 700; color: #334155; margin-top: 2px;">
+                            Statement Date: <?= date('F d, Y h:i A') ?>
+                        </div>
+                        <div style="font-size: 7pt; color: #64748b; margin-top: 1px;">
+                            Aarcon Financial Management &amp; Disbursement System
+                        </div>
+                    </div>
+                </div>
+            </div>
