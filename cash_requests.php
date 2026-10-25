@@ -250,7 +250,7 @@ $allTotal = array_sum(array_column($allRequests, 'amount'));
                                                         data-request-id="<?= $req['id'] ?>"
                                                         data-voucher="<?= e($req['voucher_no']) ?>"
                                                         title="Approve Cash Release">
-                                                    ✓ Approve
+                                                    Approve
                                                 </button>
                                                 <form action="api/actions.php" method="POST" style="display: inline; margin: 0;" onsubmit="return confirm('Disapprove / Delete request?');">
                                                     <input type="hidden" name="action" value="reject_cash_request">
@@ -399,7 +399,7 @@ $allTotal = array_sum(array_column($allRequests, 'amount'));
                                             <span style="color: var(--text-muted); margin-left: 4px;">(<?= e($req['approved_by'] ?: 'Manager') ?>)</span>
                                         </td>
                                         <td class="col-toggle-cash-status" style="text-align: center;">
-                                            <span class="badge badge-funded">✓ Approved</span>
+                                            <span class="badge badge-funded">Approved</span>
                                         </td>
                                     </tr>
                                 <?php endforeach; ?>

@@ -72,7 +72,7 @@ require_once __DIR__ . '/includes/header.php';
             <span>+ Add New User</span>
         </button>
         <button class="btn btn-outline btn-sm" onclick="switchAdminTab('tab-cms')">
-            <span>🛠️ CMS &amp; Options</span>
+            <span>CMS &amp; Options</span>
         </button>
     </div>
 </div>
@@ -81,18 +81,18 @@ require_once __DIR__ . '/includes/header.php';
 <div class="tabs-container">
     <div class="tabs-nav no-print" style="margin-bottom: 1.5rem;">
         <button class="tab-btn <?= $activeTab === 'tab-users' ? 'active' : '' ?>" data-tab="tab-users">
-            <span>👥 User Management</span>
+            <span>User Management</span>
             <span class="badge" style="background: var(--bg-subtle); color: var(--text-main); font-weight: 700;"><?= $totalUsers ?></span>
         </button>
         <button class="tab-btn <?= $activeTab === 'tab-cms' ? 'active' : '' ?>" data-tab="tab-cms">
-            <span>🛠️ CMS &amp; Customization</span>
+            <span>CMS &amp; Customization</span>
             <span class="badge" style="background: rgba(220, 38, 38, 0.08); color: var(--aarcon-red); font-weight: 700;"><?= $totalCmsBanks + $totalCmsDropdowns + $totalCmsFields ?></span>
         </button>
         <button class="tab-btn <?= $activeTab === 'tab-settings' ? 'active' : '' ?>" data-tab="tab-settings">
-            <span>⚙️ System Settings</span>
+            <span>System Settings</span>
         </button>
         <button class="tab-btn <?= $activeTab === 'tab-audit' ? 'active' : '' ?>" data-tab="tab-audit">
-            <span>🛡️ Audit Trail</span>
+            <span>Audit Trail</span>
             <span class="badge" style="background: var(--bg-subtle); color: var(--text-main); font-weight: 700;"><?= $totalAuditLogsCount ?></span>
         </button>
     </div>
@@ -242,15 +242,15 @@ require_once __DIR__ . '/includes/header.php';
         <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem;">
             <div class="tabs-nav no-print" style="margin: 0; background: rgba(0, 0, 0, 0.05); padding: 4px; border-radius: 14px;">
                 <button type="button" class="cms-sub-tab <?= $activeCmsSub === 'banks' ? 'active' : '' ?>" data-cms-target="#cmsSubBanks">
-                    <span>🏦 Banks &amp; Routing Codes</span>
+                    <span>Banks &amp; Routing Codes</span>
                     <span class="badge" style="background: var(--bg-subtle); color: var(--text-main); font-weight: 700;"><?= $totalCmsBanks ?></span>
                 </button>
                 <button type="button" class="cms-sub-tab <?= $activeCmsSub === 'dropdowns' ? 'active' : '' ?>" data-cms-target="#cmsSubDropdowns">
-                    <span>📋 Dropdown Choices</span>
+                    <span>Dropdown Choices</span>
                     <span class="badge" style="background: var(--bg-subtle); color: var(--text-main); font-weight: 700;"><?= $totalCmsDropdowns ?></span>
                 </button>
                 <button type="button" class="cms-sub-tab <?= $activeCmsSub === 'fields' ? 'active' : '' ?>" data-cms-target="#cmsSubFields">
-                    <span>🧩 Custom Fields</span>
+                    <span>Custom Fields</span>
                     <span class="badge" style="background: var(--bg-subtle); color: var(--text-main); font-weight: 700;"><?= $totalCmsFields ?></span>
                 </button>
             </div>
@@ -275,7 +275,7 @@ require_once __DIR__ . '/includes/header.php';
             <div class="card" style="margin-bottom: 1.25rem; background: linear-gradient(135deg, rgba(0, 113, 227, 0.06) 0%, rgba(255, 255, 255, 0.7) 100%);">
                 <div class="card-body" style="padding: 1rem 1.25rem;">
                     <div style="display: flex; gap: 0.85rem; align-items: center;">
-                        <div style="font-size: 1.75rem;">🏦</div>
+                        <div style="width: 36px; height: 36px; border-radius: 8px; background: rgba(220, 38, 38, 0.08); color: var(--aarcon-red); display: flex; align-items: center; justify-content: center; flex-shrink: 0;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M3 10h18M5 10v11M19 10v11M9 10v11M14 10v11M12 2L2 7h20L12 2z"/></svg></div>
                         <div style="font-size: 0.86rem; color: var(--text-muted); line-height: 1.5;">
                             <strong style="color: var(--text-main);">Bank Routing &amp; Check Number Automation:</strong>
                             Customize accredited banks, branch offices, and <strong>3-digit starting check routing codes</strong>. When an accountant selects a bank (e.g., <em>BDO Unibank</em>), the system immediately prefixes the check number with that bank's designated starting code (e.g. <code>001-</code>).
@@ -380,7 +380,7 @@ require_once __DIR__ . '/includes/header.php';
             <div class="card" style="margin-bottom: 1.25rem; background: linear-gradient(135deg, rgba(52, 199, 89, 0.06) 0%, rgba(255, 255, 255, 0.7) 100%);">
                 <div class="card-body" style="padding: 1rem 1.25rem;">
                     <div style="display: flex; gap: 0.85rem; align-items: center;">
-                        <div style="font-size: 1.75rem;">📋</div>
+                        <div style="width: 36px; height: 36px; border-radius: 8px; background: rgba(220, 38, 38, 0.08); color: var(--aarcon-red); display: flex; align-items: center; justify-content: center; flex-shrink: 0;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg></div>
                         <div style="font-size: 0.86rem; color: var(--text-muted); line-height: 1.5;">
                             <strong style="color: var(--text-main);">Customizable System Dropdowns:</strong>
                             Manage the selectable options for <strong>Project Districts</strong>, <strong>Expense Categories</strong>, <strong>Payment Methods</strong>, and <strong>Check Priority Statuses</strong>. Any edits or additions instantly propagate to check modals, collection entries, and executive reports.
@@ -506,7 +506,7 @@ require_once __DIR__ . '/includes/header.php';
             <div class="card" style="margin-bottom: 1.25rem; background: linear-gradient(135deg, rgba(175, 82, 222, 0.06) 0%, rgba(255, 255, 255, 0.7) 100%);">
                 <div class="card-body" style="padding: 1rem 1.25rem;">
                     <div style="display: flex; gap: 0.85rem; align-items: center;">
-                        <div style="font-size: 1.75rem;">🧩</div>
+                        <div style="width: 36px; height: 36px; border-radius: 8px; background: rgba(220, 38, 38, 0.08); color: var(--aarcon-red); display: flex; align-items: center; justify-content: center; flex-shrink: 0;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></div>
                         <div style="font-size: 0.86rem; color: var(--text-muted); line-height: 1.5;">
                             <strong style="color: var(--text-main);">Enterprise Custom Fields Engine:</strong>
                             Add dynamic fields to <strong>Checks &amp; Vouchers</strong>, <strong>Petty Cash Vouchers</strong>, or <strong>Client Collections</strong>. These custom fields appear automatically in input forms, edit modals, voucher printouts, and reporting sheets.
@@ -652,7 +652,7 @@ require_once __DIR__ . '/includes/header.php';
                 <div class="card-body">
                     
                     <div style="font-size: 0.8rem; font-weight: 700; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.05em; margin-bottom: 1rem;">
-                        🏢 Company Profile &amp; Letterhead
+                        Company Profile &amp; Letterhead
                     </div>
 
                     <div class="form-grid">
@@ -685,7 +685,7 @@ require_once __DIR__ . '/includes/header.php';
                     <hr style="margin: 1.5rem 0; border: none; border-top: 1px solid var(--border-color);">
 
                     <div style="font-size: 0.8rem; font-weight: 700; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.05em; margin-bottom: 1rem;">
-                        💰 Financial &amp; Approval Defaults
+                        Financial &amp; Approval Defaults
                     </div>
 
                     <div class="form-grid">

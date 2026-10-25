@@ -484,10 +484,10 @@ $amountWords = number_to_words_pesos($check['amount'] ?? 0);
         </div>
         <div class="print-toolbar-actions">
             <button type="button" class="btn-tb btn-tb-primary" onclick="window.print();">
-                🖨️ Print Voucher
+                Print Voucher
             </button>
             <a href="print_check.php?id=<?= $check['id'] ?>" class="btn-tb btn-tb-outline" title="Switch to Check Writer / Bank Cheque Format">
-                💵 View / Print Check
+                View / Print Check
             </a>
             <a href="vouchers.php" class="btn-tb btn-tb-outline">
                 &larr; Back to Vouchers

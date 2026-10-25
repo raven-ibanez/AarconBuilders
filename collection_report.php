@@ -84,7 +84,7 @@ $periodLabel = (!empty($startDate) && !empty($endDate))
         <p class="page-subtitle">Statement period: <?= e($periodLabel) ?></p>
     </div>
     <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
-        <button class="btn btn-primary btn-sm" onclick="window.print();">🖨️ Print Report (Short Bond Paper)</button>
+        <button class="btn btn-primary btn-sm" onclick="window.print();">Print Report (Short Bond Paper)</button>
         <a href="collections.php" class="btn btn-outline btn-sm">Collections Manager</a>
     </div>
 </div>
@@ -340,7 +340,7 @@ $periodLabel = (!empty($startDate) && !empty($endDate))
                                         <?php endif; ?>
                                     </td>
                                     <td style="text-align: center;">
-                                        <span class="badge badge-collected" style="font-size: 0.7rem;">✓ Collected</span>
+                                        <span class="badge badge-collected" style="font-size: 0.7rem;">Collected</span>
                                     </td>
                                 </tr>
                             <?php endforeach; ?>

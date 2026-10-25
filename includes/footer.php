@@ -125,7 +125,7 @@
                                 </button>
                             </div>
                             <input type="date" name="check_date" id="checkMaturityDate" class="form-control" style="margin-top: 0.35rem;" value="<?= date('Y-m-d') ?>">
-                            <small id="checkMaturityHint" style="font-weight: 600; font-size: 0.72rem; color: var(--color-primary); display: block; margin-top: 2px;">Tag: 📅 Dated Check</small>
+                            <small id="checkMaturityHint" style="font-weight: 600; font-size: 0.72rem; color: var(--color-primary); display: block; margin-top: 2px;">Tag: Dated Check</small>
                             <small style="color: var(--text-muted); font-size: 0.70rem;">Leave blank if maturity date isn't known yet (editable anytime).</small>
                         </div>
 
@@ -213,8 +213,8 @@
                             <label class="form-label">Priority Status</label>
                             <select name="priority_status" id="fundPriorityStatus" class="form-control">
                                 <option value="Standard">Standard</option>
-                                <option value="Prioritized">⭐ Prioritized</option>
-                                <option value="Hold">⏸️ Hold</option>
+                                <option value="Prioritized">Prioritized</option>
+                                <option value="Hold">Hold</option>
                             </select>
                         </div>
 
@@ -267,7 +267,7 @@
                                 </button>
                             </div>
                             <input type="date" name="check_date" id="editCheckDateInput" class="form-control" style="margin-top: 0.35rem;">
-                            <small id="editCheckDateHint" style="font-weight: 600; font-size: 0.75rem; color: var(--color-primary); display: block; margin-top: 4px;">Tag: 📅 Dated Check</small>
+                            <small id="editCheckDateHint" style="font-weight: 600; font-size: 0.75rem; color: var(--color-primary); display: block; margin-top: 4px;">Tag: Dated Check</small>
                             <small style="color: var(--text-muted); font-size: 0.72rem;">If matching issue date, tags as Dated Check. If future date, tags as Post-Dated Check.</small>
                         </div>
                     </div>

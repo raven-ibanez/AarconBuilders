@@ -115,8 +115,8 @@ $districtsList = get_project_districts();
     </div>
     <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
         <button class="btn btn-success btn-sm" data-open-modal="modalAddCollection">+ Record Collection</button>
-        <a href="collection_report.php" class="btn btn-primary btn-sm">📑 Cashed Collection Report</a>
-        <button class="btn btn-outline btn-sm" onclick="window.print();">🖨️ Print</button>
+        <a href="collection_report.php" class="btn btn-primary btn-sm">Cashed Collection Report</a>
+        <button class="btn btn-outline btn-sm" onclick="window.print();">Print</button>
     </div>
 </div>
 
@@ -199,7 +199,7 @@ $districtsList = get_project_districts();
     <!-- Excel Header Bar -->
     <div class="excel-sheet-header no-print">
         <div class="excel-sheet-title">
-            <span style="font-size: 1.1rem;">📊</span> PROJECTED COLLECTION
+            PROJECTED COLLECTION
         </div>
         <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
             <div class="excel-sheet-date">
@@ -365,9 +365,9 @@ $districtsList = get_project_districts();
                             <!-- 10. STATUS -->
                             <td class="col-toggle-proj-status" style="text-align: center;">
                                 <?php if ($col['status'] === 'collected'): ?>
-                                    <span class="badge badge-collected" style="font-size: 0.68rem; padding: 2px 7px;">✓ Collected</span>
+                                    <span class="badge badge-collected" style="font-size: 0.68rem; padding: 2px 7px;">Collected</span>
                                 <?php else: ?>
-                                    <span class="badge badge-inprocess" style="font-size: 0.68rem; padding: 2px 7px;">⏳ In Process</span>
+                                    <span class="badge badge-inprocess" style="font-size: 0.68rem; padding: 2px 7px;">In Process</span>
                                 <?php endif; ?>
                             </td>
 
@@ -393,7 +393,7 @@ $districtsList = get_project_districts();
                                             style="padding: 1px 6px; font-size: 0.72rem; color: #dc2626; border-color: #fca5a5;" 
                                             title="Edit Collection"
                                             data-collection='<?= htmlspecialchars(json_encode($col), ENT_QUOTES, 'UTF-8') ?>'>
-                                        ✏️ Edit
+                                        Edit
                                     </button>
                                     <form action="api/actions.php" method="POST" style="margin: 0;">
                                         <input type="hidden" name="action" value="update_collection_status">

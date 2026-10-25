@@ -341,7 +341,13 @@ $appTagline = function_exists('get_system_setting') ? get_system_setting('compan
             <!-- Flash Alert -->
             <?php if ($flash): ?>
                 <div class="alert-box <?= $flash['type'] === 'danger' || $flash['type'] === 'warning' ? 'alert-danger-bw' : 'alert-info-bw' ?>">
-                    <span><?= $flash['type'] === 'danger' ? '✕' : 'ℹ' ?></span>
+                    <span style="display: flex; align-items: center;">
+                        <?php if ($flash['type'] === 'danger' || $flash['type'] === 'warning'): ?>
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+                        <?php else: ?>
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                        <?php endif; ?>
+                    </span>
                     <span style="flex: 1;"><?= e($flash['message']) ?></span>
                 </div>
             <?php endif; ?>
@@ -504,7 +510,7 @@ $appTagline = function_exists('get_system_setting') ? get_system_setting('compan
             iconValid.style.display = 'flex';
             usernameFeedback.textContent = '';
             usernameFeedback.classList.remove('show');
-            if (validationStatus) validationStatus.textContent = '✓ Valid';
+            if (validationStatus) validationStatus.textContent = 'Valid';
         }
 
         function resetValidation() {

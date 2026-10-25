@@ -126,8 +126,8 @@ $vouchers = $stmt->fetchAll();
         <div style="display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap;">
             <span style="font-weight: 600; font-size: 0.85rem; color: var(--text-muted);">Vouchers:</span>
             <a href="vouchers.php?review_status=all" class="btn btn-sm <?= $reviewFilter === 'all' ? 'btn-primary' : 'btn-outline' ?>">All (<?= $totalVouchers ?>)</a>
-            <a href="vouchers.php?review_status=reviewed" class="btn btn-sm <?= $reviewFilter === 'reviewed' ? 'btn-primary' : 'btn-outline' ?>">✓ Reviewed (<?= $reviewedVouchers ?>)</a>
-            <a href="vouchers.php?review_status=pending" class="btn btn-sm <?= $reviewFilter === 'pending' ? 'btn-primary' : 'btn-outline' ?>" style="<?= $reviewFilter === 'pending' ? 'background: #f59e0b; border-color: #f59e0b; color: #fff;' : 'color: #b45309; border-color: #fde68a;' ?>">⏳ Pending to Review (<?= $pendingReviewVouchers ?>)</a>
+            <a href="vouchers.php?review_status=reviewed" class="btn btn-sm <?= $reviewFilter === 'reviewed' ? 'btn-primary' : 'btn-outline' ?>">Reviewed (<?= $reviewedVouchers ?>)</a>
+            <a href="vouchers.php?review_status=pending" class="btn btn-sm <?= $reviewFilter === 'pending' ? 'btn-primary' : 'btn-outline' ?>" style="<?= $reviewFilter === 'pending' ? 'background: #f59e0b; border-color: #f59e0b; color: #fff;' : 'color: #b45309; border-color: #fde68a;' ?>">Pending Review (<?= $pendingReviewVouchers ?>)</a>
         </div>
 
         <!-- Date Range & Search -->
@@ -161,7 +161,7 @@ $vouchers = $stmt->fetchAll();
     <!-- Excel Header Bar -->
     <div class="excel-sheet-header no-print">
         <div class="excel-sheet-title">
-            <span class="excel-sheet-icon">📑</span> CHECK DISBURSEMENT VOUCHERS (CDVS) REGISTRY
+            <span class="excel-sheet-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></span> CHECK DISBURSEMENT VOUCHERS (CDVS) REGISTRY
         </div>
         <div style="display: flex; align-items: center; gap: 0.65rem; flex-wrap: wrap;">
             <div class="excel-sheet-date">
@@ -347,11 +347,11 @@ $vouchers = $stmt->fetchAll();
                                 <td class="col-toggle-vch-status" style="text-align: center;">
                                     <?php if ((int)($v['is_reviewed'] ?? 1) === 1): ?>
                                         <span class="badge badge-funded" style="font-size: 0.68rem; padding: 2px 6px;" title="Reviewed and pushed to Check funding module">
-                                            ✓ In Checks
+                                            In Checks
                                         </span>
                                     <?php else: ?>
                                         <span class="badge badge-inprocess" style="font-size: 0.68rem; padding: 2px 6px;" title="Pending review">
-                                            ⏳ To Review
+                                            To Review
                                         </span>
                                     <?php endif; ?>
                                 </td>
@@ -363,13 +363,13 @@ $vouchers = $stmt->fetchAll();
                                                 style="padding: 1px 6px; font-size: 0.72rem; color: #dc2626; border-color: #fca5a5;"
                                                 data-check='<?= htmlspecialchars(json_encode($v), ENT_QUOTES, 'UTF-8') ?>'
                                                 title="Edit Full Voucher Details">
-                                            ✏️ Edit
+                                            Edit
                                         </button>
                                         <button type="button" class="btn btn-outline btn-sm btn-print-check-voucher" 
                                                 style="padding: 1px 6px; font-size: 0.72rem;"
                                                 data-voucher='<?= json_encode($voucherPayload, JSON_HEX_APOS | JSON_HEX_QUOT) ?>'
                                                 title="Print Official Aarcon Voucher or Bank Cheque">
-                                            🖨️ Print
+                                            Print
                                         </button>
                                         <?php if ((int)($v['is_reviewed'] ?? 1) === 0): ?>
                                             <form action="api/actions.php" method="POST" class="form-review-voucher" style="margin: 0; display: inline;">
@@ -378,7 +378,7 @@ $vouchers = $stmt->fetchAll();
                                                 <button type="submit" class="btn btn-primary btn-sm btn-review-voucher"
                                                         style="padding: 1px 6px; font-size: 0.72rem; background: #059669; border-color: #059669;"
                                                         title="Mark Reviewed: Throws this voucher to the Check module">
-                                                    ✓ Review
+                                                    Review
                                                 </button>
                                             </form>
                                         <?php endif; ?>
@@ -561,10 +561,10 @@ $vouchers = $stmt->fetchAll();
             <button type="button" class="btn btn-outline" onclick="closeModal('modalPrintCheckVoucher')">Close</button>
             <div style="display: flex; gap: 8px;">
                 <a id="btnLinkPrintCheck" href="#" target="_blank" class="btn btn-outline" style="color: #dc2626; border-color: #fca5a5;">
-                    💵 Print Bank Cheque
+                    Print Bank Cheque
                 </a>
                 <a id="btnLinkPrintVoucher" href="#" target="_blank" class="btn btn-primary">
-                    🖨️ Print Official Voucher
+                    Print Official Voucher
                 </a>
             </div>
         </div>

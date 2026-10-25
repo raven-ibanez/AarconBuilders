@@ -134,7 +134,7 @@ $allChecksTotal = array_sum(array_column($allChecks, 'amount'));
         </button>
 
         <button class="tab-btn <?= $activeTab === 'holding' ? 'active' : '' ?>" data-tab="tab-holding">
-            <span>⏸️ Holding Area</span>
+            <span>Holding Area</span>
             <?php if (count($holdingChecks) > 0): ?>
                 <span class="badge badge-hold"><?= count($holdingChecks) ?></span>
             <?php endif; ?>
@@ -158,7 +158,7 @@ $allChecksTotal = array_sum(array_column($allChecks, 'amount'));
             <!-- Excel Header Bar -->
             <div class="excel-sheet-header no-print">
                 <div class="excel-sheet-title">
-                    <span style="font-size: 1.1rem;">🏦</span> CHEQUE FUNDING QUEUE (AWAITING REVIEW)
+                    CHEQUE FUNDING QUEUE (AWAITING REVIEW)
                 </div>
                 <div style="display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;">
                     <div class="excel-sheet-date">
@@ -290,9 +290,9 @@ $allChecksTotal = array_sum(array_column($allChecks, 'amount'));
                                         <td class="col-toggle-chk-priority">
                                             <div class="no-print">
                                                 <select class="check-priority-select form-control" data-check-id="<?= $chk['id'] ?>" style="padding: 2px 4px; font-size: 0.75rem; height: auto;">
-                                                    <option value="Prioritized" <?= $priority === 'Prioritized' ? 'selected' : '' ?>>⭐ Prioritized</option>
+                                                    <option value="Prioritized" <?= $priority === 'Prioritized' ? 'selected' : '' ?>>Prioritized</option>
                                                     <option value="Standard" <?= $priority === 'Standard' ? 'selected' : '' ?>>Standard</option>
-                                                    <option value="Hold" <?= $priority === 'Hold' ? 'selected' : '' ?>>⏸️ Hold</option>
+                                                    <option value="Hold" <?= $priority === 'Hold' ? 'selected' : '' ?>>Hold</option>
                                                 </select>
                                             </div>
                                             <div class="print-only" style="display: none; font-weight: 700;">
@@ -332,13 +332,13 @@ $allChecksTotal = array_sum(array_column($allChecks, 'amount'));
                                                         data-check-id="<?= $chk['id'] ?>"
                                                         data-check-num="<?= e($chk['check_number']) ?>"
                                                         data-voucher-num="<?= e($chk['voucher_number'] ?? '') ?>">
-                                                    🖨️ Print
+                                                    Print
                                                 </button>
                                                 <button type="button" class="btn btn-outline btn-sm btn-edit-check"
                                                         style="padding: 1px 6px; font-size: 0.72rem; color: #dc2626; border-color: #fca5a5;"
                                                         title="Edit Full Check Details"
                                                         data-check='<?= htmlspecialchars(json_encode($chk), ENT_QUOTES, 'UTF-8') ?>'>
-                                                    ✏️ Edit
+                                                    Edit
                                                 </button>
                                                 <!-- Fund Button triggers Cheque Date confirmation modal -->
                                                 <button type="button" class="btn btn-primary btn-sm btn-ajax-fund"
@@ -533,9 +533,9 @@ $allChecksTotal = array_sum(array_column($allChecks, 'amount'));
                                         <td class="col-toggle-chk-issuedate" style="text-align: center; font-size: 0.78rem;" class="excel-mono"><?= format_date($chk['issue_date']) ?></td>
                                         <td class="col-toggle-chk-priority">
                                             <?php if ($priority === 'Prioritized'): ?>
-                                                <span class="badge badge-prioritized">⭐ Prioritized</span>
+                                                <span class="badge badge-prioritized">Prioritized</span>
                                             <?php elseif ($priority === 'Hold'): ?>
-                                                <span class="badge badge-hold">⏸️ Hold</span>
+                                                <span class="badge badge-hold">Hold</span>
                                             <?php else: ?>
                                                 <span class="badge badge-standard">Standard</span>
                                             <?php endif; ?>
@@ -568,7 +568,7 @@ $allChecksTotal = array_sum(array_column($allChecks, 'amount'));
                                             <span style="color: var(--text-muted); margin-left: 4px;">(<?= e($chk['funded_by'] ?: 'Manager') ?>)</span>
                                         </td>
                                         <td class="col-toggle-chk-status" style="text-align: center;">
-                                            <span class="badge badge-funded">✓ Funded</span>
+                                            <span class="badge badge-funded">Funded</span>
                                         </td>
                                         <td class="action-cell no-print" style="text-align: center;">
                                             <div style="display: flex; gap: 0.25rem; justify-content: center; align-items: center;">
@@ -578,13 +578,13 @@ $allChecksTotal = array_sum(array_column($allChecks, 'amount'));
                                                         data-check-id="<?= $chk['id'] ?>"
                                                         data-check-num="<?= e($chk['check_number']) ?>"
                                                         data-voucher-num="<?= e($chk['voucher_number'] ?? '') ?>">
-                                                    🖨️ Print
+                                                    Print
                                                 </button>
                                                 <button type="button" class="btn btn-outline btn-sm btn-edit-check"
                                                         style="padding: 1px 6px; font-size: 0.72rem; color: #dc2626; border-color: #fca5a5;"
                                                         title="Edit Full Check Details"
                                                         data-check='<?= htmlspecialchars(json_encode($chk), ENT_QUOTES, 'UTF-8') ?>'>
-                                                    ✏️ Edit
+                                                    Edit
                                                 </button>
                                             </div>
                                         </td>
@@ -695,7 +695,6 @@ $allChecksTotal = array_sum(array_column($allChecks, 'amount'));
             </div>
 
             <div class="no-print" style="padding: 0.6rem 1.25rem; background: rgba(254, 242, 242, 0.7); backdrop-filter: blur(8px); border-bottom: 1px solid rgba(254, 205, 211, 0.8); font-size: 0.78rem; color: #991b1b; display: flex; align-items: center; gap: 0.5rem;">
-                <span style="font-size: 1rem;">⏸️</span>
                 <span><strong>Holding Area:</strong> These signed checks are intentionally withheld from release to control company cash flow. Releasers must NOT hand out these checks until management unholds or prioritizes them.</span>
             </div>
 
@@ -751,7 +750,7 @@ $allChecksTotal = array_sum(array_column($allChecks, 'amount'));
                                     <?php $typeTag = get_check_maturity_tag($chk['issue_date'], $chk['check_date']); ?>
                                     <tr style="background: rgba(254, 242, 242, 0.5);">
                                         <td class="col-toggle-chk-status" style="text-align: center;">
-                                            <span class="badge badge-hold">⏸️ ON HOLD</span>
+                                            <span class="badge badge-hold">ON HOLD</span>
                                         </td>
                                         <td class="col-toggle-chk-chequedate" style="text-align: center; font-size: 0.78rem;" class="excel-mono"><?= format_date($chk['check_date']) ?></td>
                                         <td class="col-toggle-chk-issuedate" style="text-align: center; font-size: 0.78rem;" class="excel-mono"><?= format_date($chk['issue_date']) ?></td>
@@ -784,19 +783,19 @@ $allChecksTotal = array_sum(array_column($allChecks, 'amount'));
                                                         data-check-id="<?= $chk['id'] ?>"
                                                         data-check-num="<?= e($chk['check_number']) ?>"
                                                         data-voucher-num="<?= e($chk['voucher_number'] ?? '') ?>">
-                                                    🖨️
+                                                    Print
                                                 </button>
                                                 <button type="button" class="btn btn-outline btn-sm btn-edit-check"
                                                         style="padding: 1px 6px; font-size: 0.72rem; color: #dc2626; border-color: #fca5a5;"
                                                         title="Edit Full Check Details"
                                                         data-check='<?= htmlspecialchars(json_encode($chk), ENT_QUOTES, 'UTF-8') ?>'>
-                                                    ✏️
+                                                    Edit
                                                 </button>
                                                 <form action="api/actions.php" method="POST" style="margin:0; display:inline;">
                                                     <input type="hidden" name="action" value="update_check_priority">
                                                     <input type="hidden" name="check_id" value="<?= $chk['id'] ?>">
                                                     <input type="hidden" name="priority_status" value="Prioritized">
-                                                    <button type="submit" class="btn btn-sm btn-primary" style="padding: 1px 6px; font-size: 0.72rem;" title="Move to Prioritized Release">⭐ Prioritize</button>
+                                                    <button type="submit" class="btn btn-sm btn-primary" style="padding: 1px 6px; font-size: 0.72rem;" title="Move to Prioritized Release">Prioritize</button>
                                                 </form>
                                                 <form action="api/actions.php" method="POST" style="margin:0; display:inline;">
                                                     <input type="hidden" name="action" value="update_check_priority">
@@ -970,9 +969,9 @@ $allChecksTotal = array_sum(array_column($allChecks, 'amount'));
                                         <td class="col-toggle-chk-chequedate" style="text-align: center; font-size: 0.78rem;" class="excel-mono"><?= format_date($chk['check_date']) ?></td>
                                         <td class="col-toggle-chk-priority">
                                             <?php if ($priority === 'Prioritized'): ?>
-                                                <span class="badge badge-prioritized">⭐ Prioritized</span>
+                                                <span class="badge badge-prioritized">Prioritized</span>
                                             <?php elseif ($priority === 'Hold'): ?>
-                                                <span class="badge badge-hold">⏸️ Hold</span>
+                                                <span class="badge badge-hold">Hold</span>
                                             <?php else: ?>
                                                 <span class="badge badge-standard">Standard</span>
                                             <?php endif; ?>
@@ -1015,13 +1014,13 @@ $allChecksTotal = array_sum(array_column($allChecks, 'amount'));
                                                         data-check-id="<?= $chk['id'] ?>"
                                                         data-check-num="<?= e($chk['check_number']) ?>"
                                                         data-voucher-num="<?= e($chk['voucher_number'] ?? '') ?>">
-                                                    🖨️
+                                                    Print
                                                 </button>
                                                 <button type="button" class="btn btn-outline btn-sm btn-edit-check"
                                                         style="padding: 1px 6px; font-size: 0.72rem; color: #dc2626; border-color: #fca5a5;"
                                                         title="Edit Full Check Details"
                                                         data-check='<?= htmlspecialchars(json_encode($chk), ENT_QUOTES, 'UTF-8') ?>'>
-                                                    ✏️
+                                                    Edit
                                                 </button>
                                                 <?php if ($chk['status'] === 'pending'): ?>
                                                     <form action="api/actions.php" method="POST" style="display:inline; margin:0;" onsubmit="return confirm('Void/Cancel check?');">
@@ -1076,7 +1075,7 @@ $allChecksTotal = array_sum(array_column($allChecks, 'amount'));
     <div class="modal-dialog" style="max-width: 460px;">
         <div class="modal-header">
             <div>
-                <h3 class="modal-title">🖨️ Print Document</h3>
+                <h3 class="modal-title">Print Document</h3>
                 <p style="margin: 2px 0 0; font-size: 0.8rem; color: var(--text-muted);">
                     Choose print format for Check #<strong id="printModalCheckNum" style="color: var(--text-main);">-</strong>
                 </p>
@@ -1086,7 +1085,7 @@ $allChecksTotal = array_sum(array_column($allChecks, 'amount'));
         <div class="modal-body" style="padding: 1.25rem; display: flex; flex-direction: column; gap: 0.85rem;">
             <!-- Option 1: Official Voucher -->
             <a id="linkModalPrintVoucher" href="#" target="_blank" class="card" style="padding: 1rem; text-decoration: none; display: flex; align-items: center; gap: 1rem; border: 1.5px solid var(--border-color); border-radius: var(--radius-md); transition: all 0.2s; background: var(--bg-surface);">
-                <div style="font-size: 2rem;">📋</div>
+                <div style="width: 44px; height: 44px; border-radius: 8px; background: rgba(220, 38, 38, 0.08); color: var(--aarcon-red); display: flex; align-items: center; justify-content: center; flex-shrink: 0;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
                 <div>
                     <div style="font-weight: 700; font-size: 0.95rem; color: var(--text-main);">Official Aarcon Builders Voucher</div>
                     <div style="font-size: 0.78rem; color: var(--text-muted); margin-top: 2px;">
@@ -1097,7 +1096,7 @@ $allChecksTotal = array_sum(array_column($allChecks, 'amount'));
 
             <!-- Option 2: Bank Cheque (Check Writer) -->
             <a id="linkModalPrintCheque" href="#" target="_blank" class="card" style="padding: 1rem; text-decoration: none; display: flex; align-items: center; gap: 1rem; border: 1.5px solid var(--border-color); border-radius: var(--radius-md); transition: all 0.2s; background: var(--bg-surface);">
-                <div style="font-size: 2rem;">💵</div>
+                <div style="width: 44px; height: 44px; border-radius: 8px; background: rgba(220, 38, 38, 0.08); color: var(--aarcon-red); display: flex; align-items: center; justify-content: center; flex-shrink: 0;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg></div>
                 <div>
                     <div style="font-weight: 700; font-size: 0.95rem; color: var(--text-main);">Bank Cheque (Check Writer)</div>
                     <div style="font-size: 0.78rem; color: var(--text-muted); margin-top: 2px;">

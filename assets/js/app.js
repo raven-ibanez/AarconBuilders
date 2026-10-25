@@ -259,16 +259,16 @@ function initCheckMaturityHint() {
         const maturityVal = maturityDateInput.value;
 
         if (!maturityVal) {
-            hintEl.textContent = 'Tag: ⏳ Pending Date (Date Unknown Yet)';
+            hintEl.textContent = 'Tag: Pending Date (Date Unknown Yet)';
             hintEl.style.color = '#d97706'; // warning amber
             return;
         }
 
         if (issueVal && maturityVal > issueVal) {
-            hintEl.textContent = 'Tag: ⏳ Post-Dated Check (PDC)';
+            hintEl.textContent = 'Tag: Post-Dated Check (PDC)';
             hintEl.style.color = '#7c3aed'; // purple
         } else {
-            hintEl.textContent = 'Tag: 📅 Dated Check';
+            hintEl.textContent = 'Tag: Dated Check';
             hintEl.style.color = '#16a34a'; // green
         }
     }
@@ -474,16 +474,16 @@ function initEditCheckDateModal() {
         const curDate = dateInput.value;
 
         if (!curDate) {
-            hintEl.textContent = 'Tag: ⏳ Pending Date (Date Unknown Yet)';
+            hintEl.textContent = 'Tag: Pending Date (Date Unknown Yet)';
             hintEl.style.color = '#d97706';
             return;
         }
 
         if (issueVal && curDate > issueVal) {
-            hintEl.textContent = 'Tag: ⏳ Post-Dated Check (PDC)';
+            hintEl.textContent = 'Tag: Post-Dated Check (PDC)';
             hintEl.style.color = '#7c3aed';
         } else {
-            hintEl.textContent = 'Tag: 📅 Dated Check';
+            hintEl.textContent = 'Tag: Dated Check';
             hintEl.style.color = '#16a34a';
         }
     }
@@ -1087,7 +1087,7 @@ function initAjaxButtons() {
                     alert(result.message || 'Failed to review voucher.');
                     if (btn) {
                         btn.disabled = false;
-                        btn.innerHTML = '✓ Reviewed';
+                        btn.innerHTML = 'Review';
                     }
                 }
             } catch (err) {
@@ -1095,7 +1095,7 @@ function initAjaxButtons() {
                 alert('Connection error occurred.');
                 if (btn) {
                     btn.disabled = false;
-                    btn.innerHTML = '✓ Reviewed';
+                    btn.innerHTML = 'Review';
                 }
             }
         });

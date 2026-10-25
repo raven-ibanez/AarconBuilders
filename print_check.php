@@ -499,8 +499,8 @@ $amountWords = number_to_words_pesos($amountVal);
             <!-- Mode Switcher -->
             <label class="toolbar-label">Format:</label>
             <select id="selectPrintMode" class="tb-select" onchange="switchPrintMode(this.value)">
-                <option value="cheque_only">💵 Cheque Leaf Only (8" x 3")</option>
-                <option value="combined">📄 Check + CDV Voucher (8.5" x 11")</option>
+                <option value="cheque_only">Cheque Leaf Only (8" x 3")</option>
+                <option value="combined">Check + CDV Voucher (8.5" x 11")</option>
             </select>
 
             <!-- Crossed Check Toggle -->
@@ -524,10 +524,10 @@ $amountWords = number_to_words_pesos($amountVal);
 
         <div class="toolbar-group">
             <button type="button" class="btn-tb btn-tb-primary" onclick="window.print();">
-                🖨️ Print Cheque
+                Print Cheque
             </button>
             <a href="print_voucher.php?id=<?= $check['id'] ?>" class="btn-tb btn-tb-outline" title="Switch to Full Aarcon Voucher Format">
-                📋 Official Voucher
+                Official Voucher
             </a>
             <a href="checks.php" class="btn-tb btn-tb-outline">
                 &larr; Back to Checks

@@ -177,9 +177,9 @@ $pendingCashRequests = $db->query("SELECT * FROM cash_requests WHERE status = 'p
                                     <td style="font-weight: 600; color: #1e3a8a;"><?= format_date($chk['check_date']) ?></td>
                                     <td>
                                         <?php if ($typeTag === 'Post-Dated Check'): ?>
-                                            <span class="badge badge-pdc">⏳ PDC</span>
+                                            <span class="badge badge-pdc">PDC</span>
                                         <?php else: ?>
-                                            <span class="badge badge-dated">📅 Dated</span>
+                                            <span class="badge badge-dated">Dated</span>
                                         <?php endif; ?>
                                     </td>
                                     <td>

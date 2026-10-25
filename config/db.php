@@ -259,8 +259,8 @@ function ensure_schema_upgrades(PDO $pdo): void {
             // Priority Statuses
             $priorities = [
                 ['Standard', 'Standard (Regular Release)', 1],
-                ['Prioritized', '⭐ Prioritized (Urgent Release)', 2],
-                ['Hold', '⏸️ Hold (Do Not Hand Out Yet)', 3]
+                ['Prioritized', 'Prioritized (Urgent Release)', 2],
+                ['Hold', 'Hold (Do Not Hand Out Yet)', 3]
             ];
             foreach ($priorities as $p) {
                 $ddStmt->execute(['priority_statuses', $p[0], $p[1], $p[2]]);

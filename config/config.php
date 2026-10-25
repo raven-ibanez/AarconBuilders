@@ -247,8 +247,8 @@ function get_priority_statuses(): array {
 
     return [
         'Standard'    => 'Standard (Regular Release)',
-        'Prioritized' => '⭐ Prioritized (Urgent Release)',
-        'Hold'        => '⏸️ Hold (Do Not Hand Out Yet)'
+        'Prioritized' => 'Prioritized (Urgent Release)',
+        'Hold'        => 'Hold (Do Not Hand Out Yet)'
     ];
 }
 
@@ -281,7 +281,7 @@ function render_custom_fields_html(string $module, $values = [], string $prefix 
 
     $html = '<div class="custom-fields-box col-span-2" style="background: rgba(255, 255, 255, 0.55); border: 1px dashed rgba(0, 113, 227, 0.35); border-radius: 14px; padding: 0.85rem 1rem; margin: 0.65rem 0;">';
     $html .= '<div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.65rem;">';
-    $html .= '<span style="font-size: 0.76rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--apple-blue); display: flex; align-items: center; gap: 0.35rem;">🧩 Custom Fields</span>';
+    $html .= '<span style="font-size: 0.76rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--apple-blue); display: flex; align-items: center; gap: 0.35rem;">Custom Fields</span>';
     $html .= '<small style="font-size: 0.7rem; color: var(--text-muted);">Configured via Admin CMS</small>';
     $html .= '</div>';
     $html .= '<div class="form-grid" style="gap: 0.75rem;">';

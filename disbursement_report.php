@@ -122,7 +122,7 @@ $netCashBalance = $totalInflow - $totalOutflow;
         <button type="button" class="btn btn-outline btn-sm" data-open-modal="modalAddCashRequest">
             + Cash Request
         </button>
-        <button class="btn btn-primary btn-sm" onclick="window.print();">🖨️ Print Report</button>
+        <button class="btn btn-primary btn-sm" onclick="window.print();">Print Report</button>
     </div>
 </div>
 
@@ -195,7 +195,7 @@ $netCashBalance = $totalInflow - $totalOutflow;
                     <td style="padding: 8px; border: 1px solid #cbd5e1; color: <?= $netCashBalance >= 0 ? '#000000' : '#dc2626' ?>; background: #f8fafc; font-family: Arial, sans-serif;">
                         <?= format_money($netCashBalance) ?>
                         <div style="font-size: 7pt; font-weight: 700; color: <?= $netCashBalance >= 0 ? '#047857' : '#dc2626' ?>; margin-top: 2px;">
-                            <?= $netCashBalance >= 0 ? '✓ Net Surplus Remaining' : '⚠ Cash Deficit' ?>
+                            <?= $netCashBalance >= 0 ? 'Net Surplus Remaining' : 'Cash Deficit' ?>
                         </div>
                     </td>
                 </tr>
@@ -211,7 +211,7 @@ $netCashBalance = $totalInflow - $totalOutflow;
                 <?= format_money($netCashBalance) ?>
             </div>
             <div style="font-size: 0.8rem; color: #64748b; margin-top: 2px;">
-                <?= $netCashBalance >= 0 ? '✓ Surplus cash remaining' : '⚠ Deficit: Outflow exceeds collections' ?>
+                <?= $netCashBalance >= 0 ? 'Surplus cash remaining' : 'Deficit: Outflow exceeds collections' ?>
             </div>
         </div>
 
@@ -403,9 +403,9 @@ $netCashBalance = $totalInflow - $totalOutflow;
                                     <td class="col-toggle-disb-col-method"><span class="badge" style="background: rgba(0, 0, 0, 0.04); font-size: 0.72rem;"><?= e($col['payment_method']) ?></span></td>
                                     <td class="col-toggle-disb-col-status" style="text-align: center;">
                                         <?php if ($col['status'] === 'collected'): ?>
-                                            <span class="badge badge-collected" style="font-size: 0.7rem;">✓ Collected</span>
+                                            <span class="badge badge-collected" style="font-size: 0.7rem;">Collected</span>
                                         <?php else: ?>
-                                            <span class="badge badge-inprocess" style="font-size: 0.7rem;">⏳ In Process</span>
+                                            <span class="badge badge-inprocess" style="font-size: 0.7rem;">In Process</span>
                                         <?php endif; ?>
                                     </td>
                                     <td class="col-toggle-disb-col-amount excel-num" style="color: #059669; font-weight: 700;"><?= format_money($col['amount']) ?></td>
@@ -414,7 +414,7 @@ $netCashBalance = $totalInflow - $totalOutflow;
                                                 style="padding: 1px 6px; font-size: 0.72rem; color: #dc2626; border-color: #fca5a5;"
                                                 title="Edit Collection Record"
                                                 data-collection='<?= htmlspecialchars(json_encode($col), ENT_QUOTES, 'UTF-8') ?>'>
-                                            ✏️ Edit
+                                            Edit
                                         </button>
                                     </td>
                                 </tr>
@@ -530,8 +530,8 @@ $netCashBalance = $totalInflow - $totalOutflow;
                 <select name="chk_priority" class="form-control" style="padding: 0.2rem 0.4rem; font-size: 0.78rem; width: auto;" onchange="this.form.submit();">
                     <option value="all">All Priorities</option>
                     <option value="Standard" <?= $chkPriority === 'Standard' ? 'selected' : '' ?>>Standard</option>
-                    <option value="Prioritized" <?= $chkPriority === 'Prioritized' ? 'selected' : '' ?>>⭐ Prioritized</option>
-                    <option value="Hold" <?= $chkPriority === 'Hold' ? 'selected' : '' ?>>⏸️ Hold</option>
+                    <option value="Prioritized" <?= $chkPriority === 'Prioritized' ? 'selected' : '' ?>>Prioritized</option>
+                    <option value="Hold" <?= $chkPriority === 'Hold' ? 'selected' : '' ?>>Hold</option>
                 </select>
 
                 <select name="chk_district" class="form-control" style="padding: 0.2rem 0.4rem; font-size: 0.78rem; width: auto;" onchange="this.form.submit();">
@@ -585,7 +585,7 @@ $netCashBalance = $totalInflow - $totalOutflow;
                                     <td class="col-toggle-disb-chk-payee" style="font-weight: 600; color: #0f172a;">
                                         <?= e($chk['payee']) ?>
                                         <?php if ($chk['priority_status'] === 'Prioritized'): ?>
-                                            <span class="badge badge-prioritized" style="font-size: 0.68rem; margin-left: 2px;">⭐</span>
+                                            <span class="badge badge-prioritized" style="font-size: 0.68rem; margin-left: 2px;">Prioritized</span>
                                         <?php endif; ?>
                                     </td>
                                     <td class="col-toggle-disb-chk-project">
@@ -600,7 +600,7 @@ $netCashBalance = $totalInflow - $totalOutflow;
                                                 style="padding: 1px 6px; font-size: 0.72rem; color: #dc2626; border-color: #fca5a5;"
                                                 title="Edit Check Record"
                                                 data-check='<?= htmlspecialchars(json_encode($chk), ENT_QUOTES, 'UTF-8') ?>'>
-                                            ✏️ Edit
+                                            Edit
                                         </button>
                                     </td>
                                 </tr>
@@ -771,7 +771,7 @@ $netCashBalance = $totalInflow - $totalOutflow;
                                                 style="padding: 1px 6px; font-size: 0.72rem; color: #dc2626; border-color: #fca5a5;"
                                                 title="Edit Cash Expense Record"
                                                 data-cash='<?= htmlspecialchars(json_encode($cash), ENT_QUOTES, 'UTF-8') ?>'>
-                                            ✏️ Edit
+                                            Edit
                                         </button>
                                     </td>
                                 </tr>
