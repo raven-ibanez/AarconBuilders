@@ -37,13 +37,15 @@ if ($chkDateFilter === 'today') {
     $endDate   = $endOfMonth;
 }
 
-// Build SQL filter for checks
+// Build SQL filter for checks (strictly validated and PDO quoted)
 $dateConditions = [];
-if (!empty($startDate) && !empty($endDate)) {
+$isValidStart = !empty($startDate) && preg_match('/^\d{4}-\d{2}-\d{2}$/', $startDate);
+$isValidEnd   = !empty($endDate) && preg_match('/^\d{4}-\d{2}-\d{2}$/', $endDate);
+if ($isValidStart && $isValidEnd) {
     $dateConditions[] = "{$dateField} BETWEEN " . $db->quote($startDate) . " AND " . $db->quote($endDate);
-} elseif (!empty($startDate)) {
+} elseif ($isValidStart) {
     $dateConditions[] = "{$dateField} >= " . $db->quote($startDate);
-} elseif (!empty($endDate)) {
+} elseif ($isValidEnd) {
     $dateConditions[] = "{$dateField} <= " . $db->quote($endDate);
 }
 

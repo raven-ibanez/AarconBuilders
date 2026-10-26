@@ -84,7 +84,7 @@ CREATE TABLE IF NOT EXISTS users (
     password VARCHAR(255) NOT NULL,
     full_name VARCHAR(100) NOT NULL,
     email VARCHAR(150) DEFAULT '',
-    role VARCHAR(50) DEFAULT 'accountant', -- 'admin', 'accountant', 'outsourced_accountant'
+    role VARCHAR(50) DEFAULT 'accountant', -- 'admin', 'accountant'
     status VARCHAR(20) DEFAULT 'active', -- 'active', 'inactive'
     avatar_color VARCHAR(20) DEFAULT '#0f172a',
     last_login DATETIME DEFAULT NULL,
@@ -97,11 +97,10 @@ CREATE TABLE IF NOT EXISTS system_settings (
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
--- Seed System Accounts: Admin, Accountant, Outsourced Accountant (Pass: admin123, accountant123, accountant123)
+-- Seed System Accounts: Admin, Accountant (Pass: admin123, accountant123)
 INSERT OR IGNORE INTO users (id, username, password, full_name, email, role, status, avatar_color) VALUES 
 (1, 'admin', '$2y$10$JSIM4rLgYaeY0Mqif1TNBOKgSMqy.idlNulcaazm2mOxDGG77ZSOK', 'System Administrator', 'admin@aarconbuilders.com', 'admin', 'active', '#0f172a'),
-(2, 'accountant', '$2y$10$KW3MLuKL8LXor87O10Byu.rhstmyshcSvrs/etsnulwyjVaj44The', 'Lead Accountant', 'accountant@aarconbuilders.com', 'accountant', 'active', '#0f172a'),
-(3, 'outsourced', '$2y$10$KW3MLuKL8LXor87O10Byu.rhstmyshcSvrs/etsnulwyjVaj44The', 'Outsourced Accountant', 'outsourced@aarconbuilders.com', 'outsourced_accountant', 'active', '#7c3aed');
+(2, 'accountant', '$2y$10$KW3MLuKL8LXor87O10Byu.rhstmyshcSvrs/etsnulwyjVaj44The', 'Lead Accountant', 'accountant@aarconbuilders.com', 'accountant', 'active', '#0f172a');
 
 -- Seed System Settings
 INSERT OR IGNORE INTO system_settings (setting_key, setting_value) VALUES

@@ -4,8 +4,10 @@
  * Cash & Check Management System
  */
 
-// Start session if not already started
+// Start secure session if not already started (HttpOnly prevents session theft via XSS)
 if (session_status() === PHP_SESSION_NONE && !headers_sent()) {
+    ini_set('session.cookie_httponly', '1');
+    ini_set('session.use_only_cookies', '1');
     session_start();
 }
 

@@ -160,8 +160,6 @@ require_once __DIR__ . '/includes/header.php';
                                     <td>
                                         <?php if ($u['role'] === 'admin'): ?>
                                             <span class="badge badge-admin">Admin</span>
-                                        <?php elseif ($u['role'] === 'outsourced_accountant'): ?>
-                                            <span class="badge badge-outsourced">Outsourced</span>
                                         <?php else: ?>
                                             <span class="badge badge-accountant">Accountant</span>
                                         <?php endif; ?>
@@ -844,7 +842,6 @@ require_once __DIR__ . '/includes/header.php';
                         <label class="form-label">System Role <span class="req">*</span></label>
                         <select name="role" class="form-control" required>
                             <option value="accountant">Lead Accountant (Financial Operations)</option>
-                            <option value="outsourced_accountant">Outsourced Accountant (Restricted RBAC)</option>
                             <option value="admin">Administrator (System Admin Only)</option>
                         </select>
                     </div>
@@ -915,7 +912,6 @@ require_once __DIR__ . '/includes/header.php';
                         <label class="form-label">System Role</label>
                         <select name="role" id="editRole" class="form-control" required>
                             <option value="accountant">Lead Accountant</option>
-                            <option value="outsourced_accountant">Outsourced Accountant</option>
                             <option value="admin">Administrator</option>
                         </select>
                     </div>
@@ -1384,6 +1380,15 @@ require_once __DIR__ . '/includes/header.php';
                     btnAddDropdown.style.display = (targetSelector === '#cmsSubDropdowns') ? 'inline-flex' : 'none';
                     btnAddField.style.display = (targetSelector === '#cmsSubFields') ? 'inline-flex' : 'none';
                 }
+
+                // Persist CMS sub-tab to URL without page reload
+                try {
+                    const subKey = (targetSelector === '#cmsSubBanks') ? 'banks' : ((targetSelector === '#cmsSubDropdowns') ? 'dropdowns' : 'fields');
+                    const url = new URL(window.location.href);
+                    url.searchParams.set('tab', 'tab-cms');
+                    url.searchParams.set('cms_sub', subKey);
+                    window.history.replaceState({}, '', url.toString());
+                } catch (err) {}
             });
         });
 

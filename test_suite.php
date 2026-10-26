@@ -86,16 +86,16 @@ assert_test($balance === 300000.0, "Balance Collectible = Net ($net) - Collected
 $balancePercent = compute_percentage_balance($contract, $balance);
 assert_test($balancePercent === 30.0, "Percentage Balance = ($balance / $contract) * 100 = $balancePercent%");
 
-// --- 5. User Roles & RBAC ---
-echo "\n--- 5. Testing Outsourced Accountant User & RBAC ---\n";
-$outsourcedUser = $db->query("SELECT * FROM users WHERE role = 'outsourced_accountant' LIMIT 1")->fetch();
-assert_test(!empty($outsourcedUser), "Outsourced Accountant account exists in database (User: {$outsourcedUser['username']})");
+// --- 5. User Roles & RBAC (Admin & Lead Accountant) ---
+echo "\n--- 5. Testing User Roles & RBAC (Admin & Lead Accountant) ---\n";
+$accountantUser = $db->query("SELECT * FROM users WHERE role = 'accountant' LIMIT 1")->fetch();
+assert_test(!empty($accountantUser), "Lead Accountant account exists in database (User: {$accountantUser['username']})");
 
-$_SESSION['user'] = $outsourcedUser;
-assert_test(is_outsourced_accountant(), "is_outsourced_accountant() returns true for outsourced role");
-assert_test(is_accountant(), "is_accountant() permits outsourced accountant for general financial access");
-assert_test(!is_admin(), "is_admin() strictly prevents admin access for outsourced accountant");
-assert_test(get_user_role_label('outsourced_accountant') === 'Outsourced Accountant', "Role label returns 'Outsourced Accountant'");
+$_SESSION['user'] = $accountantUser;
+assert_test(!is_outsourced_accountant(), "is_outsourced_accountant() returns false (role removed)");
+assert_test(is_accountant(), "is_accountant() returns true for accountant role");
+assert_test(!is_admin(), "is_admin() strictly prevents admin access for accountant");
+assert_test(get_user_role_label('accountant') === 'Lead Accountant', "Role label returns 'Lead Accountant'");
 
 // --- 6. Workflow Validation: Adding Check & Funding with Cheque Date ---
 echo "\n--- 6. Testing Cheque Processing & Funding Workflow Logic ---\n";

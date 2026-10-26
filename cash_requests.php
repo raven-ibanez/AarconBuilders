@@ -237,8 +237,8 @@ $allTotal = array_sum(array_column($allRequests, 'amount'));
                                             <?= format_money($req['amount']) ?>
                                         </td>
                                         <td class="col-toggle-cash-requestedby"><?= e($req['requested_by']) ?></td>
-                                        <td class="col-toggle-cash-desc" style="max-width: 260px;" title="<?= e($req['purpose']) ?>">
-                                            <?= e($req['purpose']) ?>
+                                        <td class="col-toggle-cash-desc" style="max-width: 280px; min-width: 180px;" title="<?= e($req['purpose']) ?>">
+                                            <div class="cell-desc-wrap"><?= e($req['purpose']) ?></div>
                                         </td>
                                         <td class="col-toggle-cash-date excel-mono" style="text-align: center; font-size: 0.78rem;">
                                             <?= format_date($req['request_date']) ?>
@@ -391,8 +391,8 @@ $allTotal = array_sum(array_column($allRequests, 'amount'));
                                             <?= format_money($req['amount']) ?>
                                         </td>
                                         <td class="col-toggle-cash-requestedby"><?= e($req['requested_by']) ?></td>
-                                        <td class="col-toggle-cash-desc" style="max-width: 260px;" title="<?= e($req['purpose']) ?>">
-                                            <?= e($req['purpose']) ?>
+                                        <td class="col-toggle-cash-desc" style="max-width: 280px; min-width: 180px;" title="<?= e($req['purpose']) ?>">
+                                            <div class="cell-desc-wrap"><?= e($req['purpose']) ?></div>
                                         </td>
                                         <td class="col-toggle-cash-apprdate" style="font-size: 0.78rem;">
                                             <span class="excel-mono"><?= format_date($req['approved_at'], 'M d, Y h:i A') ?></span>
@@ -533,8 +533,8 @@ $allTotal = array_sum(array_column($allRequests, 'amount'));
                                             <?= format_money($req['amount']) ?>
                                         </td>
                                         <td class="col-toggle-cash-requestedby"><?= e($req['requested_by']) ?></td>
-                                        <td class="col-toggle-cash-desc" style="max-width: 260px;" title="<?= e($req['purpose']) ?>">
-                                            <?= e($req['purpose']) ?>
+                                        <td class="col-toggle-cash-desc" style="max-width: 280px; min-width: 180px;" title="<?= e($req['purpose']) ?>">
+                                            <div class="cell-desc-wrap"><?= e($req['purpose']) ?></div>
                                         </td>
                                         <td class="col-toggle-cash-logdate" style="text-align: center; font-size: 0.78rem;" class="excel-mono">
                                             <?php if ($req['status'] === 'approved'): ?>

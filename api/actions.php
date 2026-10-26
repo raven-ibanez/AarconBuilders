@@ -704,8 +704,8 @@ try {
                 respond(false, "Username '{$username}' is already in use.", [], '../admin.php?tab=tab-users');
             }
 
-            // Allowed roles: admin, accountant, outsourced_accountant
-            $validRoles = ['admin', 'accountant', 'outsourced_accountant'];
+            // Allowed roles: admin, accountant
+            $validRoles = ['admin', 'accountant'];
             if (!in_array($role, $validRoles)) {
                 $role = 'accountant';
             }
@@ -737,7 +737,7 @@ try {
             $password = $_POST['password'] ?? '';
             $avatarColor = trim($_POST['avatar_color'] ?? '#0f172a');
 
-            if (!in_array($role, ['admin', 'accountant', 'outsourced_accountant'])) {
+            if (!in_array($role, ['admin', 'accountant'])) {
                 $role = 'accountant';
             }
 

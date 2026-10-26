@@ -131,47 +131,6 @@ if ($currentUser) {
                     </a>
                 </div>
 
-            <?php elseif (is_outsourced_accountant()): ?>
-                <!-- OUTSOURCED ACCOUNTANT NAVIGATION -->
-                <div class="sidebar-section">
-                    <span class="sidebar-heading">Billings &amp; Inflow</span>
-                    <a href="collections.php" class="sidebar-link <?= $currentPage === 'collections.php' ? 'active' : '' ?>">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"></path><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"></path><path d="M18 12a2 2 0 0 0 0 4h4v-4z"></path></svg>
-                        <span>Collections</span>
-                    </a>
-                    <a href="collection_report.php" class="sidebar-link <?= $currentPage === 'collection_report.php' ? 'active' : '' ?>">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="12" y1="18" x2="12" y2="12"></line><line x1="9" y1="15" x2="15" y2="15"></line></svg>
-                        <span>Cashed Report</span>
-                    </a>
-                </div>
-
-                <div class="sidebar-section">
-                    <span class="sidebar-heading">Operations</span>
-                    <a href="cash_requests.php" class="sidebar-link <?= $currentPage === 'cash_requests.php' ? 'active' : '' ?>">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"></rect><circle cx="12" cy="12" r="2"></circle><path d="M6 12h.01M18 12h.01"></path></svg>
-                        <span>Cash Requests</span>
-                        <?php if ($pendingCashCount > 0): ?>
-                            <span class="sidebar-badge"><?= $pendingCashCount ?></span>
-                        <?php endif; ?>
-                    </a>
-                    <a href="vouchers.php" class="sidebar-link <?= $currentPage === 'vouchers.php' ? 'active' : '' ?>">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
-                        <span>Vouchers</span>
-                    </a>
-                    <a href="checks.php" class="sidebar-link <?= $currentPage === 'checks.php' ? 'active' : '' ?>">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"></rect><line x1="2" y1="10" x2="22" y2="10"></line><line x1="6" y1="15" x2="10" y2="15"></line></svg>
-                        <span>Checks</span>
-                    </a>
-                </div>
-
-                <div class="sidebar-section">
-                    <span class="sidebar-heading">Reports</span>
-                    <a href="disbursement_report.php" class="sidebar-link <?= $currentPage === 'disbursement_report.php' ? 'active' : '' ?>">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
-                        <span>Disbursement Report</span>
-                    </a>
-                </div>
-
             <?php else: ?>
                 <!-- LEAD ACCOUNTANT / STANDARD NAVIGATION -->
                 <div class="sidebar-section">

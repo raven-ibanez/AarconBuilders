@@ -48,8 +48,34 @@ function initTabs() {
             }
 
             btn.classList.add('active');
+
+            // Persist active tab so page reloads do not reset user view
+            try {
+                const pageName = window.location.pathname.split('/').pop() || 'index.php';
+                localStorage.setItem(`aarcon_active_tab_${pageName}`, targetId);
+
+                const url = new URL(window.location.href);
+                const tabParam = (pageName === 'admin.php') ? targetId : targetId.replace('tab-', '');
+                url.searchParams.set('tab', tabParam);
+                window.history.replaceState({}, '', url.toString());
+            } catch (err) {}
         });
     });
+
+    // Auto-restore tab from localStorage if not explicitly in URL
+    try {
+        const pageName = window.location.pathname.split('/').pop() || 'index.php';
+        const urlParams = new URLSearchParams(window.location.search);
+        if (!urlParams.has('tab')) {
+            const savedTabId = localStorage.getItem(`aarcon_active_tab_${pageName}`);
+            if (savedTabId) {
+                const savedBtn = document.querySelector(`.tab-btn[data-tab="${savedTabId}"]`);
+                if (savedBtn && !savedBtn.classList.contains('active')) {
+                    savedBtn.click();
+                }
+            }
+        }
+    } catch (err) {}
 }
 
 // ==========================================
@@ -1133,31 +1159,32 @@ function updateCashTableTotals(table) {
 }
 
 // ==========================================
-// DYNAMIC REPORT COLUMN TOGGLES (Apple Liquid Glass)
+// DYNAMIC REPORT COLUMN TOGGLES (Persistent across reloads)
 // ==========================================
 function initReportColumnToggles() {
-    // 1. Column Checkbox changes
-    const toggleCheckboxes = document.querySelectorAll('[data-report-toggle]');
-    toggleCheckboxes.forEach(cb => {
-        const colKey = cb.getAttribute('data-report-toggle');
-
-        function applyToggle() {
-            const isVisible = cb.checked;
-            const targetCols = document.querySelectorAll(`.col-toggle-${colKey}`);
-            targetCols.forEach(el => {
-                if (isVisible) {
-                    el.style.display = '';
-                    el.classList.remove('col-hidden');
-                } else {
-                    el.style.display = 'none';
-                    el.classList.add('col-hidden');
+    function getTableForPicker(dropdown) {
+        // Find associated table by data-table-search or inside the nearest card/pane container
+        const container = dropdown.closest('.excel-sheet-card, .tab-pane, .card') || dropdown.parentElement;
+        if (container) {
+            const searchInput = container.querySelector('[data-table-search]');
+            if (searchInput) {
+                const tableSel = searchInput.getAttribute('data-table-search');
+                if (tableSel) {
+                    const tbl = document.querySelector(tableSel);
+                    if (tbl) return tbl;
                 }
-            });
+            }
+            const tbl = container.querySelector('table.excel-table') || container.querySelector('table');
+            if (tbl) return tbl;
         }
+        return document.querySelector('table.excel-table');
+    }
 
-        cb.addEventListener('change', applyToggle);
-        applyToggle();
-    });
+    function getStorageKey(dropdown, table) {
+        const tableId = table && table.id ? table.id : 'default';
+        const pageKey = window.location.pathname.split('/').pop() || 'page';
+        return `aarcon_cols_${pageKey}_${tableId}`;
+    }
 
     function closeAllPickers() {
         document.querySelectorAll('.col-picker-dropdown.active').forEach(d => {
@@ -1169,6 +1196,70 @@ function initReportColumnToggles() {
             }
         });
     }
+
+    // 1. Column Pickers initialization & state restoration
+    const pickerDropdowns = document.querySelectorAll('.col-picker-dropdown');
+    pickerDropdowns.forEach(dropdown => {
+        const table = getTableForPicker(dropdown);
+        const storageKey = getStorageKey(dropdown, table);
+
+        let savedPrefs = {};
+        try {
+            const raw = localStorage.getItem(storageKey);
+            if (raw) {
+                savedPrefs = JSON.parse(raw);
+            }
+        } catch (e) {
+            savedPrefs = {};
+        }
+
+        const checkboxes = dropdown.querySelectorAll('[data-report-toggle]');
+        checkboxes.forEach(cb => {
+            const colKey = cb.getAttribute('data-report-toggle');
+            if (!colKey) return;
+
+            // Restore state from localStorage if user previously changed it
+            if (savedPrefs[colKey] !== undefined) {
+                cb.checked = Boolean(savedPrefs[colKey]);
+            }
+
+            function applyToggle() {
+                const isVisible = cb.checked;
+                // Scope hiding to the specific table, or document fallback
+                const targetCols = (table || document).querySelectorAll(`.col-toggle-${colKey}`);
+                targetCols.forEach(el => {
+                    if (isVisible) {
+                        el.style.display = '';
+                        el.classList.remove('col-hidden');
+                    } else {
+                        el.style.display = 'none';
+                        el.classList.add('col-hidden');
+                    }
+                });
+
+                // Persist current state of all checkboxes in this picker to localStorage
+                savedPrefs[colKey] = isVisible;
+                try {
+                    localStorage.setItem(storageKey, JSON.stringify(savedPrefs));
+                } catch (e) {}
+            }
+
+            cb.addEventListener('change', applyToggle);
+
+            // Immediately apply visibility on page load according to restored or default state
+            const isVisible = cb.checked;
+            const targetCols = (table || document).querySelectorAll(`.col-toggle-${colKey}`);
+            targetCols.forEach(el => {
+                if (isVisible) {
+                    el.style.display = '';
+                    el.classList.remove('col-hidden');
+                } else {
+                    el.style.display = 'none';
+                    el.classList.add('col-hidden');
+                }
+            });
+        });
+    });
 
     // 2. Col Picker dropdown trigger buttons
     const pickerBtns = document.querySelectorAll('.btn-col-picker');
@@ -1193,19 +1284,29 @@ function initReportColumnToggles() {
         });
     });
 
-    // 3. Reset All Buttons in pickers
+    // 3. Reset All Buttons in pickers (restores default visibility and clears stored preference)
     const resetBtns = document.querySelectorAll('.col-picker-reset-btn');
     resetBtns.forEach(btn => {
         btn.addEventListener('click', (e) => {
             e.stopPropagation();
             const dropdown = btn.closest('.col-picker-dropdown');
             if (!dropdown) return;
+            const table = getTableForPicker(dropdown);
+            const storageKey = getStorageKey(dropdown, table);
+
+            try {
+                localStorage.removeItem(storageKey);
+            } catch (e) {}
+
             const checkboxes = dropdown.querySelectorAll('[data-report-toggle]');
             checkboxes.forEach(cb => {
-                if (!cb.checked) {
-                    cb.checked = true;
-                    cb.dispatchEvent(new Event('change'));
-                }
+                cb.checked = true;
+                const colKey = cb.getAttribute('data-report-toggle');
+                const targetCols = (table || document).querySelectorAll(`.col-toggle-${colKey}`);
+                targetCols.forEach(el => {
+                    el.style.display = '';
+                    el.classList.remove('col-hidden');
+                });
             });
         });
     });

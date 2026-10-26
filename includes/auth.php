@@ -33,15 +33,14 @@ function is_admin(): bool {
  */
 function is_accountant(): bool {
     $user = current_user();
-    return $user !== null && isset($user['role']) && ($user['role'] === 'accountant' || $user['role'] === 'outsourced_accountant');
+    return $user !== null && isset($user['role']) && $user['role'] === 'accountant';
 }
 
 /**
- * Check if the logged-in user is specifically an outsourced accountant
+ * Check if the logged-in user is specifically an outsourced accountant (deprecated/removed role)
  */
 function is_outsourced_accountant(): bool {
-    $user = current_user();
-    return $user !== null && isset($user['role']) && $user['role'] === 'outsourced_accountant';
+    return false;
 }
 
 /**
@@ -55,8 +54,6 @@ function get_user_role_label(?string $role = null): string {
     switch ($role) {
         case 'admin':
             return 'Administrator';
-        case 'outsourced_accountant':
-            return 'Outsourced Accountant';
         case 'accountant':
         default:
             return 'Lead Accountant';

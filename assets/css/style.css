@@ -135,7 +135,7 @@
 }
 
 html, body {
-    overflow-x: hidden !important;
+    overflow-x: clip;
     max-width: 100vw;
 }
 
@@ -177,7 +177,7 @@ a:hover {
     background: transparent;
 }
 
-/* Left Sidebar (Apple Translucent Frosted Glass) */
+/* Left Sidebar (Apple Translucent Frosted Glass - Fixed Viewport Navigation) */
 .app-sidebar {
     width: 256px;
     flex-shrink: 0;
@@ -187,9 +187,12 @@ a:hover {
     border-right: 1px solid var(--sidebar-glass-border);
     display: flex;
     flex-direction: column;
-    position: sticky;
+    position: fixed;
     top: 0;
+    left: 0;
+    bottom: 0;
     height: 100vh;
+    height: 100dvh;
     z-index: 100;
     transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), width 0.25s ease;
     box-shadow: 1px 0 0 0 rgba(255, 255, 255, 0.6);
@@ -417,6 +420,8 @@ a:hover {
 .app-main {
     flex: 1;
     min-width: 0;
+    margin-left: 256px;
+    width: calc(100% - 256px);
     display: flex;
     flex-direction: column;
     background: transparent;
@@ -968,6 +973,55 @@ a:hover {
     border-left: 1px solid #f1f5f9;
 }
 
+/* Ensure text-heavy cells (Description, Purpose, Notes, Remarks) wrap cleanly and never overlap neighboring columns */
+.excel-table td.col-toggle-cash-desc,
+.excel-table td.col-toggle-disb-cash-purpose,
+.excel-table td.col-toggle-proj-remarks,
+.excel-table td.col-toggle-vch-remarks,
+.excel-table td.col-toggle-chk-remarks,
+.excel-table td.col-desc,
+.excel-table td.desc-cell,
+.excel-table td.cell-wrap,
+.excel-table th.col-toggle-cash-desc,
+.excel-table th.col-toggle-disb-cash-purpose {
+    white-space: normal !important;
+    word-break: break-word !important;
+    overflow-wrap: anywhere !important;
+    max-width: 280px;
+    min-width: 180px;
+}
+
+.excel-table .cell-desc-wrap {
+    max-width: 280px;
+    min-width: 160px;
+    max-height: 5.6em;
+    overflow-y: auto;
+    white-space: normal !important;
+    word-break: break-word !important;
+    overflow-wrap: anywhere !important;
+    line-height: 1.35;
+}
+
+.excel-table .cell-desc-wrap::-webkit-scrollbar {
+    width: 4px;
+}
+.excel-table .cell-desc-wrap::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 4px;
+}
+
+/* Clean wrapping for Payee & Project names if unusually long */
+.excel-table td.col-toggle-cash-project,
+.excel-table td.col-toggle-chk-payee,
+.excel-table td.col-toggle-chk-project,
+.excel-table td.col-toggle-vch-payee,
+.excel-table td.col-toggle-vch-project {
+    white-space: normal;
+    word-break: break-word;
+    overflow-wrap: anywhere;
+    max-width: 220px;
+}
+
 .excel-table tbody tr:nth-child(even) {
     background-color: #fafbfc;
 }
@@ -1313,12 +1367,6 @@ a:hover {
     background: rgba(0, 0, 0, 0.06);
     color: #1d1d1f;
     border: 1px solid rgba(0, 0, 0, 0.1);
-}
-
-.badge-outsourced {
-    background: rgba(175, 82, 222, 0.12);
-    color: #8944ab;
-    border: 1px solid rgba(175, 82, 222, 0.24);
 }
 
 /* ======================================================== */
@@ -1771,6 +1819,10 @@ textarea.form-control {
 /* RESPONSIVE DRAWER & MOBILE ADAPTATIONS */
 /* ======================================================== */
 @media (max-width: 991px) {
+    .app-main {
+        margin-left: 0;
+        width: 100%;
+    }
     .app-sidebar {
         position: fixed;
         top: 0;
@@ -1817,8 +1869,8 @@ textarea.form-control {
 /* ======================================================== */
 @media print {
     @page {
-        size: letter landscape;
-        margin: 8mm 10mm;
+        size: letter portrait;
+        margin: 10mm 8mm;
     }
 
     /* Universal zero-scrollbar and clean rendering */
@@ -1842,8 +1894,8 @@ textarea.form-control {
         background: #ffffff !important;
         color: #000000 !important;
         font-family: Arial, "Helvetica Neue", Helvetica, sans-serif !important;
-        font-size: 8pt !important;
-        line-height: 1.3 !important;
+        font-size: 9.5pt !important;
+        line-height: 1.4 !important;
         width: 100% !important;
         max-width: 100% !important;
         margin: 0 !important;
@@ -1922,8 +1974,9 @@ textarea.form-control {
     /* Print Header (Corporate Letterhead) */
     .print-header {
         display: block !important;
-        margin-bottom: 10px !important;
+        margin-bottom: 14px !important;
         page-break-inside: avoid !important;
+        break-inside: avoid !important;
         width: 100% !important;
     }
 
@@ -1934,7 +1987,7 @@ textarea.form-control {
         box-shadow: none !important;
         border-radius: 0 !important;
         padding: 0 !important;
-        margin: 0 0 10px 0 !important;
+        margin: 0 0 16px 0 !important;
         background: transparent !important;
         backdrop-filter: none !important;
         -webkit-backdrop-filter: none !important;
@@ -1984,75 +2037,124 @@ textarea.form-control {
     }
 
     /* High-Precision Corporate Accounting Tables */
+    .excel-table,
     .data-table {
         border-collapse: collapse !important;
         width: 100% !important;
         max-width: 100% !important;
         table-layout: auto !important;
-        margin-top: 4px !important;
-        margin-bottom: 10px !important;
-        border: 1.5px solid #000000 !important;
+        margin-top: 6px !important;
+        margin-bottom: 16px !important;
+        border: 2px solid #000000 !important;
     }
 
+    .excel-table thead,
     .data-table thead {
         display: table-header-group !important;
     }
 
+    .excel-table tfoot,
     .data-table tfoot {
         display: table-footer-group !important;
     }
 
+    .excel-table th,
     .data-table th {
         background: #f1f5f9 !important;
         color: #000000 !important;
         font-weight: 800 !important;
-        font-size: 7.5pt !important;
+        font-size: 8.5pt !important;
         text-transform: uppercase !important;
         letter-spacing: 0.03em !important;
-        border: 1px solid #334155 !important;
-        padding: 4px 5px !important;
+        border: 1.5px solid #1e293b !important;
+        padding: 8px 10px !important;
         text-align: left !important;
+        min-width: 0 !important;
         -webkit-print-color-adjust: exact !important;
         print-color-adjust: exact !important;
     }
 
+    .excel-table td,
     .data-table td {
-        border: 1px solid #cbd5e1 !important;
-        padding: 4px 5px !important;
-        font-size: 7.5pt !important;
+        border: 1px solid #94a3b8 !important;
+        padding: 8px 10px !important;
+        font-size: 9pt !important;
         color: #000000 !important;
         vertical-align: middle !important;
-        line-height: 1.25 !important;
+        line-height: 1.35 !important;
         word-break: normal !important;
     }
 
+    .excel-table tbody tr,
     .data-table tbody tr {
         page-break-inside: avoid !important;
+        break-inside: avoid !important;
     }
 
+    .excel-table tfoot tr,
     .data-table tfoot tr {
         page-break-inside: avoid !important;
+        break-inside: avoid !important;
     }
 
+    .excel-table tbody tr:nth-child(even),
     .data-table tbody tr:nth-child(even) {
         background-color: #f8fafc !important;
         -webkit-print-color-adjust: exact !important;
         print-color-adjust: exact !important;
     }
 
+    .excel-table th.amount-col,
+    .excel-table td.amount-col,
     .data-table th.amount-col,
     .data-table td.amount-col,
-    .amount-col {
+    .excel-table th.excel-num,
+    .excel-table td.excel-num,
+    .amount-col,
+    .excel-num {
         text-align: right !important;
-        font-weight: 700 !important;
+        font-weight: 800 !important;
+        font-size: 9.5pt !important;
         font-family: Arial, "Helvetica Neue", sans-serif !important;
         white-space: nowrap !important;
         color: #000000 !important;
     }
 
-    .mono {
+    .excel-table tfoot th,
+    .excel-table tfoot td,
+    .data-table tfoot th,
+    .data-table tfoot td {
+        font-size: 9.5pt !important;
+        font-weight: 800 !important;
+        padding: 8px 10px !important;
+        background: #f1f5f9 !important;
+        border-top: 2px solid #000000 !important;
+        border-bottom: 2px solid #000000 !important;
+        color: #000000 !important;
+    }
+
+    .excel-table td small,
+    .data-table td small {
+        font-size: 8pt !important;
+        color: #334155 !important;
+        display: inline !important;
+    }
+
+    .excel-table .cell-desc-wrap {
+        max-width: none !important;
+        max-height: none !important;
+        overflow: visible !important;
+        font-size: 8.5pt !important;
+        line-height: 1.35 !important;
+        word-break: break-word !important;
+        overflow-wrap: anywhere !important;
+    }
+
+    .mono,
+    .excel-mono {
         font-family: "Courier New", Courier, monospace !important;
         font-weight: 700 !important;
+        font-size: 9pt !important;
         white-space: nowrap !important;
         color: #000000 !important;
     }
@@ -2060,15 +2162,41 @@ textarea.form-control {
     /* Badges in Print: Crisp Text with Clean Borders */
     .badge {
         border: 1px solid #475569 !important;
-        background: transparent !important;
+        background: #ffffff !important;
         color: #000000 !important;
         font-weight: 700 !important;
-        font-size: 7pt !important;
-        padding: 1px 4px !important;
-        border-radius: 2px !important;
+        font-size: 8pt !important;
+        padding: 2.5px 6px !important;
+        border-radius: 3px !important;
         text-transform: uppercase !important;
         white-space: nowrap !important;
         display: inline-block !important;
+    }
+
+    .voucher-code-badge {
+        border: 1px solid #64748b !important;
+        background: #f8fafc !important;
+        color: #000000 !important;
+        font-family: "Courier New", Courier, monospace !important;
+        font-weight: 700 !important;
+        font-size: 8.5pt !important;
+        padding: 2.5px 6px !important;
+        border-radius: 3px !important;
+        text-decoration: none !important;
+        display: inline-block !important;
+        white-space: nowrap !important;
+    }
+
+    .category-badge-excel {
+        border: 1px solid #94a3b8 !important;
+        background: transparent !important;
+        color: #000000 !important;
+        font-size: 8pt !important;
+        font-weight: 600 !important;
+        padding: 2px 6px !important;
+        border-radius: 3px !important;
+        display: inline-block !important;
+        white-space: nowrap !important;
     }
 
     /* Executive Balance & Summary Components */
@@ -2078,8 +2206,28 @@ textarea.form-control {
     .print-summary-box {
         display: block !important;
         width: 100% !important;
-        margin-bottom: 12px !important;
+        margin-bottom: 16px !important;
         page-break-inside: avoid !important;
+        break-inside: avoid !important;
+    }
+    .print-summary-box table {
+        width: 100% !important;
+        border-collapse: collapse !important;
+        border: 2px solid #000000 !important;
+    }
+    .print-summary-box th {
+        font-size: 8.5pt !important;
+        font-weight: 800 !important;
+        padding: 6px 10px !important;
+        background: #f1f5f9 !important;
+        border: 1px solid #334155 !important;
+        text-transform: uppercase !important;
+    }
+    .print-summary-box td {
+        font-size: 10.5pt !important;
+        font-weight: 800 !important;
+        padding: 8px 10px !important;
+        border: 1px solid #cbd5e1 !important;
     }
 
     /* Section Headers in Multi-Section Reports */
@@ -2087,15 +2235,17 @@ textarea.form-control {
         display: flex !important;
         justify-content: space-between !important;
         align-items: baseline !important;
-        font-size: 9.5pt !important;
+        font-size: 11.5pt !important;
         font-weight: 900 !important;
         color: #000000 !important;
         text-transform: uppercase !important;
-        border-bottom: 1.5px solid #000000 !important;
-        padding-bottom: 2px !important;
-        margin-top: 14px !important;
-        margin-bottom: 6px !important;
+        letter-spacing: 0.03em !important;
+        border-bottom: 2px solid #000000 !important;
+        padding-bottom: 5px !important;
+        margin-top: 20px !important;
+        margin-bottom: 10px !important;
         page-break-after: avoid !important;
+        break-after: avoid !important;
     }
 
     /* Reconciliation Box */
@@ -2103,16 +2253,17 @@ textarea.form-control {
         background: transparent !important;
         border: 1.5px solid #000000 !important;
         border-radius: 0 !important;
-        padding: 8px 12px !important;
-        margin-top: 14px !important;
+        padding: 10px 14px !important;
+        margin-top: 18px !important;
         page-break-inside: avoid !important;
+        break-inside: avoid !important;
     }
     .reconciliation-box table tr {
         border-bottom: 1px solid #cbd5e1 !important;
     }
     .reconciliation-box td {
-        font-size: 8pt !important;
-        padding: 4px 0 !important;
+        font-size: 9pt !important;
+        padding: 6px 0 !important;
     }
 
     /* Formal 3-Signatory Block */
@@ -2120,10 +2271,10 @@ textarea.form-control {
         display: flex !important;
         justify-content: space-between !important;
         align-items: flex-start !important;
-        gap: 30px !important;
-        margin-top: 18px !important;
-        margin-bottom: 0 !important;
-        padding-top: 2px !important;
+        gap: 32px !important;
+        margin-top: 40px !important;
+        margin-bottom: 15px !important;
+        padding-top: 6px !important;
         text-align: center !important;
         page-break-before: auto !important;
         break-before: auto !important;
@@ -2140,23 +2291,24 @@ textarea.form-control {
     }
 
     .sig-space {
-        height: 28px !important;
+        height: 52px !important;
     }
 
     .sig-line {
         border-top: 1.5px solid #000000 !important;
         margin-top: 0 !important;
-        padding-top: 4px !important;
-        font-size: 8.5pt !important;
+        padding-top: 6px !important;
+        font-size: 9.5pt !important;
         font-weight: 800 !important;
         text-transform: uppercase !important;
+        letter-spacing: 0.04em !important;
         color: #000000 !important;
     }
 
     .sig-sub {
-        font-size: 7.5pt !important;
+        font-size: 8.5pt !important;
         color: #334155 !important;
-        margin-top: 2px !important;
+        margin-top: 3px !important;
     }
 
     .col-hidden {

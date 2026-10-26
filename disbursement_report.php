@@ -56,10 +56,15 @@ if ($period === 'today') {
     $cashWhere .= " AND request_date BETWEEN '{$startOfMonth}' AND '{$endOfMonth}'";
     $periodLabel = date('F Y');
 } elseif ($period === 'custom' && !empty($startDate) && !empty($endDate)) {
-    $colWhere  .= " AND collection_date BETWEEN '{$startDate}' AND '{$endDate}'";
-    $chkWhere  .= " AND check_date BETWEEN '{$startDate}' AND '{$endDate}'";
-    $cashWhere .= " AND request_date BETWEEN '{$startDate}' AND '{$endDate}'";
-    $periodLabel = date('M d, Y', strtotime($startDate)) . ' to ' . date('M d, Y', strtotime($endDate));
+    // Validate date format strictly (YYYY-MM-DD) and escape with PDO quote to prevent SQL injection
+    if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $startDate) && preg_match('/^\d{4}-\d{2}-\d{2}$/', $endDate)) {
+        $quotedStart = $db->quote($startDate);
+        $quotedEnd   = $db->quote($endDate);
+        $colWhere   .= " AND collection_date BETWEEN {$quotedStart} AND {$quotedEnd}";
+        $chkWhere   .= " AND check_date BETWEEN {$quotedStart} AND {$quotedEnd}";
+        $cashWhere  .= " AND request_date BETWEEN {$quotedStart} AND {$quotedEnd}";
+        $periodLabel = date('M d, Y', strtotime($startDate)) . ' to ' . date('M d, Y', strtotime($endDate));
+    }
 }
 
 // Apply Category 1: Collections Filters
@@ -764,7 +769,9 @@ $netCashBalance = $totalInflow - $totalOutflow;
                                             <span class="badge" style="background: rgba(0, 0, 0, 0.04); font-size: 0.68rem; margin-left: 4px;"><?= e($cash['project_district']) ?></span>
                                         <?php endif; ?>
                                     </td>
-                                    <td class="col-toggle-disb-cash-purpose" style="max-width: 260px;" title="<?= e($cash['purpose']) ?>"><?= e($cash['purpose']) ?></td>
+                                    <td class="col-toggle-disb-cash-purpose" style="max-width: 280px; min-width: 180px;" title="<?= e($cash['purpose']) ?>">
+                                        <div class="cell-desc-wrap"><?= e($cash['purpose']) ?></div>
+                                    </td>
                                     <td class="col-toggle-disb-cash-amount excel-num" style="font-weight: 700; color: #b91c1c;"><?= format_money($cash['amount']) ?></td>
                                     <td class="action-cell no-print" style="text-align: center;">
                                         <button type="button" class="btn btn-outline btn-sm btn-edit-cash-request"
