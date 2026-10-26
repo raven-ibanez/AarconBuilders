@@ -350,6 +350,77 @@ function render_custom_fields_badges($customFieldsData): string {
 }
 
 /**
+ * Render dynamic custom field column picker checkboxes for module data tables
+ */
+function render_custom_field_column_pickers(string $module): string {
+    $fields = get_custom_fields_for_module($module);
+    if (empty($fields)) return '';
+    $html = '';
+    foreach ($fields as $f) {
+        $key = htmlspecialchars($f['field_key'], ENT_QUOTES, 'UTF-8');
+        $label = htmlspecialchars($f['field_label'], ENT_QUOTES, 'UTF-8');
+        $html .= '<label class="col-picker-item">';
+        $html .= '<input type="checkbox" data-report-toggle="cf-' . $key . '" checked>';
+        $html .= '<span>' . $label . '</span>';
+        $html .= '</label>';
+    }
+    return $html;
+}
+
+/**
+ * Render dynamic custom field table headers (th) for module data tables
+ */
+function render_custom_field_table_headers(string $module, string $extraStyles = ''): string {
+    $fields = get_custom_fields_for_module($module);
+    if (empty($fields)) return '';
+    $html = '';
+    foreach ($fields as $f) {
+        $key = htmlspecialchars($f['field_key'], ENT_QUOTES, 'UTF-8');
+        $label = htmlspecialchars(strtoupper($f['field_label']), ENT_QUOTES, 'UTF-8');
+        $html .= '<th class="col-toggle-cf-' . $key . '" style="min-width: 110px; ' . $extraStyles . '">' . $label . '</th>';
+    }
+    return $html;
+}
+
+/**
+ * Render dynamic custom field table data cells (td) for module data tables
+ */
+function render_custom_field_table_cells(string $module, $customFieldsRaw, string $extraStyles = ''): string {
+    $fields = get_custom_fields_for_module($module);
+    if (empty($fields)) return '';
+    if (is_string($customFieldsRaw)) {
+        $values = json_decode($customFieldsRaw, true) ?: [];
+    } elseif (is_array($customFieldsRaw)) {
+        $values = $customFieldsRaw;
+    } else {
+        $values = [];
+    }
+    $html = '';
+    foreach ($fields as $f) {
+        $key = $f['field_key'];
+        $keyEsc = htmlspecialchars($key, ENT_QUOTES, 'UTF-8');
+        $val = isset($values[$key]) && $values[$key] !== '' && $values[$key] !== null ? (string)$values[$key] : '-';
+        $valEsc = htmlspecialchars($val, ENT_QUOTES, 'UTF-8');
+        $html .= '<td class="col-toggle-cf-' . $keyEsc . '" style="' . $extraStyles . '">' . $valEsc . '</td>';
+    }
+    return $html;
+}
+
+/**
+ * Render dynamic custom field table footer cells (th) for module data tables
+ */
+function render_custom_field_table_footers(string $module): string {
+    $fields = get_custom_fields_for_module($module);
+    if (empty($fields)) return '';
+    $html = '';
+    foreach ($fields as $f) {
+        $key = htmlspecialchars($f['field_key'], ENT_QUOTES, 'UTF-8');
+        $html .= '<th class="col-toggle-cf-' . $key . '"></th>';
+    }
+    return $html;
+}
+
+/**
  * Financial Computations
  * Balance Collectible = Net Amount - Amount Collected
  */
@@ -358,11 +429,12 @@ function compute_balance_collectible(float $netAmount, float $amountCollected): 
 }
 
 /**
- * Percentage of Collection Received = (Amount Collected / Contract Amount) * 100
+ * Percentage of Collection Received = (Amount Collected / Contract Amount) * 100 (Capped at 100%)
  */
 function compute_percentage_collected(float $contractAmount, float $amountCollected): float {
     if ($contractAmount <= 0) return 0.0;
-    return ($amountCollected / $contractAmount) * 100.0;
+    $pct = ($amountCollected / $contractAmount) * 100.0;
+    return min(100.0, max(0.0, $pct));
 }
 
 /**

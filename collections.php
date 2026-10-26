@@ -273,6 +273,7 @@ $districtsList = get_project_districts();
                             <input type="checkbox" data-report-toggle="proj-netcol" checked>
                             <span>Net Collection</span>
                         </label>
+                        <?= render_custom_field_column_pickers('collections') ?>
                     </div>
                 </div>
             </div>
@@ -297,13 +298,14 @@ $districtsList = get_project_districts();
                     <th class="col-toggle-proj-expdate" style="min-width: 110px; text-align: center;">Expected Date of Collection</th>
                     <th class="col-toggle-proj-deductions" style="min-width: 100px; text-align: right;">DEDUCTIONS</th>
                     <th class="col-toggle-proj-netcol" style="min-width: 115px; text-align: right;">NET COLLECTION</th>
+                    <?= render_custom_field_table_headers('collections') ?>
                     <th style="min-width: 135px; text-align: center;" class="no-print">ACTION</th>
                 </tr>
             </thead>
             <tbody>
                 <?php if (empty($collections)): ?>
                     <tr>
-                        <td colspan="14" style="text-align: center; padding: 2.5rem; color: var(--text-muted);">
+                        <td colspan="<?= 14 + count(get_custom_fields_for_module('collections')) ?>" style="text-align: center; padding: 2.5rem; color: var(--text-muted);">
                             No collection records found. Click "+ Record Collection" to add a new project entry.
                         </td>
                     </tr>
@@ -386,6 +388,8 @@ $districtsList = get_project_districts();
                                 <?= format_money($col['computed_netcol']) ?>
                             </td>
 
+                            <?= render_custom_field_table_cells('collections', $col['custom_fields'] ?? '') ?>
+
                             <!-- 14. ACTION -->
                             <td style="text-align: center;" class="no-print">
                                 <div style="display: flex; gap: 0.25rem; justify-content: center; align-items: center;">
@@ -428,6 +432,7 @@ $districtsList = get_project_districts();
                     <th class="col-toggle-proj-expdate"></th>
                     <th class="col-toggle-proj-deductions excel-num" style="color: #64748b;"><?= format_money($totalDeductionsAll) ?></th>
                     <th class="col-toggle-proj-netcol excel-num" style="color: #dc2626; font-weight: 800;"><?= format_money($totalNetCollectionsAll) ?></th>
+                    <?= render_custom_field_table_footers('collections') ?>
                     <th class="no-print"></th>
                 </tr>
             </tfoot>

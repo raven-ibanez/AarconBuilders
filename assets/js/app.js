@@ -10,6 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initTableSearch();
     initAjaxButtons();
     initBankBranchLogic();
+    initCheckNumberLimit();
     initCheckMaturityHint();
     initCollectionCalculations();
     initFundCheckModal();
@@ -312,6 +313,45 @@ function initCheckMaturityHint() {
     updateMaturityHint();
 }
 
+// ==========================================
+// CHECK NUMBER 12-DIGIT LIMIT CONTROLLER
+// ==========================================
+function initCheckNumberLimit() {
+    const checkInputs = [
+        document.getElementById('checkNumberInput'),
+        document.getElementById('editCheckNumber')
+    ];
+
+    checkInputs.forEach(input => {
+        if (!input) return;
+
+        function enforceDigitLimit() {
+            const val = input.value;
+            let digitCount = 0;
+            let result = '';
+            for (let i = 0; i < val.length; i++) {
+                const char = val[i];
+                if (/\d/.test(char)) {
+                    if (digitCount < 12) {
+                        result += char;
+                        digitCount++;
+                    }
+                } else {
+                    result += char;
+                }
+            }
+            if (val !== result) {
+                input.value = result;
+            }
+        }
+
+        input.addEventListener('input', enforceDigitLimit);
+        input.addEventListener('paste', () => {
+            setTimeout(enforceDigitLimit, 0);
+        });
+    });
+}
+
 
 // ==========================================
 // FINANCIAL COMPUTATIONS (COLLECTIONS MODAL)
@@ -326,6 +366,8 @@ function initCollectionCalculations() {
     const balanceDisplay        = document.getElementById('calcBalanceDisplay');
     const percentDisplay        = document.getElementById('calcPercentDisplay');
     const balancePercentDisplay = document.getElementById('calcBalancePercentDisplay');
+    const warningEl             = document.getElementById('colAmountWarning');
+    const form                  = document.getElementById('formAddCollection');
 
     if (!contractInput || !amountInput) return;
 
@@ -345,15 +387,24 @@ function initCollectionCalculations() {
             netColInput.value = (amountCollected > 0 || deduction > 0) ? netCol.toFixed(2) : '';
         }
 
+        // Amount Collected cannot exceed Contract Amount validation
+        if (contract > 0 && amountCollected > contract) {
+            if (warningEl) warningEl.style.display = 'block';
+            amountInput.style.borderColor = '#dc2626';
+        } else {
+            if (warningEl) warningEl.style.display = 'none';
+            amountInput.style.borderColor = '';
+        }
+
         // Balance Collectible = Net Amount - Amount Collected
         const balance = Math.max(0, net - amountCollected);
 
-        // Percentage of collections received against contract amount
+        // Percentage of collections received against contract amount (Capped at 100%)
         let percentReceived = 0;
         if (contract > 0) {
-            percentReceived = (amountCollected / contract) * 100;
+            percentReceived = Math.min(100, Math.max(0, (amountCollected / contract) * 100));
         } else if (net > 0) {
-            percentReceived = (amountCollected / net) * 100;
+            percentReceived = Math.min(100, Math.max(0, (amountCollected / net) * 100));
         } else if (amountCollected > 0) {
             percentReceived = 100;
         }
@@ -361,9 +412,9 @@ function initCollectionCalculations() {
         // Percentage of remaining balance against contract amount
         let percentBalance = 0;
         if (contract > 0) {
-            percentBalance = (balance / contract) * 100;
+            percentBalance = Math.min(100, Math.max(0, (balance / contract) * 100));
         } else if (net > 0) {
-            percentBalance = (balance / net) * 100;
+            percentBalance = Math.min(100, Math.max(0, (balance / net) * 100));
         }
 
         if (balanceDisplay) balanceDisplay.textContent = formatPHP(balance);
@@ -377,6 +428,18 @@ function initCollectionCalculations() {
             inp.addEventListener('change', recalculate);
         }
     });
+
+    if (form) {
+        form.addEventListener('submit', (e) => {
+            const contract = parseFloat(contractInput.value) || 0;
+            const amountCollected = parseFloat(amountInput.value) || 0;
+            if (contract > 0 && amountCollected > contract) {
+                e.preventDefault();
+                alert(`Validation Error: Amount Collected (${formatPHP(amountCollected)}) cannot exceed Contract Amount (${formatPHP(contract)}).`);
+                amountInput.focus();
+            }
+        });
+    }
 
     recalculate();
 }
@@ -641,6 +704,7 @@ function initEditCollectionModal() {
     const balanceDisplay        = document.getElementById('editCalcBalanceDisplay');
     const percentDisplay        = document.getElementById('editCalcPercentDisplay');
     const balancePercentDisplay = document.getElementById('editCalcBalancePercentDisplay');
+    const warningEl             = document.getElementById('editColAmountWarning');
 
     function formatPHP(val) {
         return '₱ ' + (val || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -658,15 +722,24 @@ function initEditCollectionModal() {
             netColInput.value = (amountCollected > 0 || deduction > 0) ? netCol.toFixed(2) : '';
         }
 
+        // Amount Collected cannot exceed Contract Amount validation
+        if (contract > 0 && amountCollected > contract) {
+            if (warningEl) warningEl.style.display = 'block';
+            if (amountInput) amountInput.style.borderColor = '#dc2626';
+        } else {
+            if (warningEl) warningEl.style.display = 'none';
+            if (amountInput) amountInput.style.borderColor = '';
+        }
+
         // Balance Collectible = Net Amount - Amount Collected
         const balance = Math.max(0, net - amountCollected);
 
-        // Percentage of collections received against contract amount
+        // Percentage of collections received against contract amount (Capped at 100%)
         let percentReceived = 0;
         if (contract > 0) {
-            percentReceived = (amountCollected / contract) * 100;
+            percentReceived = Math.min(100, Math.max(0, (amountCollected / contract) * 100));
         } else if (net > 0) {
-            percentReceived = (amountCollected / net) * 100;
+            percentReceived = Math.min(100, Math.max(0, (amountCollected / net) * 100));
         } else if (amountCollected > 0) {
             percentReceived = 100;
         }
@@ -674,9 +747,9 @@ function initEditCollectionModal() {
         // Percentage of remaining balance against contract amount
         let percentBalance = 0;
         if (contract > 0) {
-            percentBalance = (balance / contract) * 100;
+            percentBalance = Math.min(100, Math.max(0, (balance / contract) * 100));
         } else if (net > 0) {
-            percentBalance = (balance / net) * 100;
+            percentBalance = Math.min(100, Math.max(0, (balance / net) * 100));
         }
 
         if (balanceDisplay) balanceDisplay.textContent = formatPHP(balance);
@@ -732,6 +805,14 @@ function initEditCollectionModal() {
 
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
+
+        const contract = parseFloat(contractInput ? contractInput.value : 0) || 0;
+        const amountCollected = parseFloat(amountInput ? amountInput.value : 0) || 0;
+        if (contract > 0 && amountCollected > contract) {
+            alert(`Validation Error: Amount Collected (${formatPHP(amountCollected)}) cannot exceed Contract Amount (${formatPHP(contract)}).`);
+            amountInput.focus();
+            return;
+        }
         const submitBtn = form.querySelector('button[type="submit"]');
         if (submitBtn) {
             submitBtn.disabled = true;

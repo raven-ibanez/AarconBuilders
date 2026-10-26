@@ -841,7 +841,7 @@ require_once __DIR__ . '/includes/header.php';
                     <div class="form-group">
                         <label class="form-label">System Role <span class="req">*</span></label>
                         <select name="role" class="form-control" required>
-                            <option value="accountant">Lead Accountant (Financial Operations)</option>
+                            <option value="accountant">Finance Officer (Financial Operations)</option>
                             <option value="admin">Administrator (System Admin Only)</option>
                         </select>
                     </div>
@@ -911,7 +911,7 @@ require_once __DIR__ . '/includes/header.php';
                     <div class="form-group">
                         <label class="form-label">System Role</label>
                         <select name="role" id="editRole" class="form-control" required>
-                            <option value="accountant">Lead Accountant</option>
+                            <option value="accountant">Finance Officer</option>
                             <option value="admin">Administrator</option>
                         </select>
                     </div>

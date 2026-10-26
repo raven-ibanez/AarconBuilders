@@ -22,6 +22,7 @@
     </div> <!-- /.app-main -->
 </div> <!-- /.app-layout -->
 
+<?php if (!is_admin()): ?>
     <?php
     $footerDb = get_db();
     $districtsList = get_project_districts();
@@ -92,9 +93,9 @@
                             <label class="form-label">Check Number <span class="req">*</span></label>
                             <div style="display: flex; gap: 0.35rem; align-items: center;">
                                 <input type="text" id="bankPrefixDisplay" class="form-control" style="width: 70px; text-align: center; font-family: var(--font-mono); font-weight: 700; background: var(--bg-subtle);" placeholder="000" readonly>
-                                <input type="text" name="check_number" id="checkNumberInput" class="form-control" placeholder="e.g. 001-0019281" style="font-family: var(--font-mono); font-weight: 700;" required>
+                                <input type="text" name="check_number" id="checkNumberInput" class="form-control" placeholder="e.g. 001-0019281" maxlength="14" style="font-family: var(--font-mono); font-weight: 700;" required>
                             </div>
-                            <small style="color: var(--text-muted); font-size: 0.72rem;">First 3 digits identify the bank &amp; branch.</small>
+                            <small style="color: var(--text-muted); font-size: 0.72rem;">First 3 digits identify the bank &amp; branch. Maximum 12 digits total.</small>
                         </div>
 
                         <!-- Amount -->
@@ -405,7 +406,8 @@
                         <div class="form-group">
                             <label class="form-label">Amount Collected (<?= CURRENCY_SYMBOL ?>) <span class="req">*</span></label>
                             <input type="number" step="0.01" name="amount" id="colAmountCollected" class="form-control" placeholder="0.00" required style="font-size: 1.05rem; font-weight: 700; color: #16a34a;">
-                            <small style="color: var(--text-muted); font-size: 0.72rem;">Actual collection received for this payment</small>
+                            <small style="color: var(--text-muted); font-size: 0.72rem;">Actual collection received for this payment (cannot exceed Contract Amount)</small>
+                            <div id="colAmountWarning" style="display: none; color: #dc2626; font-size: 0.72rem; font-weight: 600; margin-top: 3px;">Amount Collected cannot exceed Contract Amount.</div>
                         </div>
 
                         <div class="form-group">
@@ -551,7 +553,8 @@
                         <div class="form-group">
                             <label class="form-label">Amount Collected (<?= CURRENCY_SYMBOL ?>) <span class="req">*</span></label>
                             <input type="number" step="0.01" name="amount" id="editColAmountCollected" class="form-control" placeholder="0.00" required style="font-size: 1.05rem; font-weight: 700; color: #16a34a;">
-                            <small style="color: var(--text-muted); font-size: 0.72rem;">Actual collection received for this payment</small>
+                            <small style="color: var(--text-muted); font-size: 0.72rem;">Actual collection received for this payment (cannot exceed Contract Amount)</small>
+                            <div id="editColAmountWarning" style="display: none; color: #dc2626; font-size: 0.72rem; font-weight: 600; margin-top: 3px;">Amount Collected cannot exceed Contract Amount.</div>
                         </div>
 
                         <div class="form-group">
@@ -650,7 +653,8 @@
                     <div class="form-grid">
                         <div class="form-group">
                             <label class="form-label">Check # <span class="req">*</span></label>
-                            <input type="text" name="check_number" id="editCheckNumber" class="form-control" required>
+                            <input type="text" name="check_number" id="editCheckNumber" class="form-control" maxlength="14" required>
+                            <small style="color: var(--text-muted); font-size: 0.72rem;">Maximum 12 digits total.</small>
                         </div>
                         <div class="form-group">
                             <label class="form-label">Voucher #</label>
@@ -810,6 +814,7 @@
             </form>
         </div>
     </div>
+<?php endif; ?>
 
     <script src="assets/js/app.js?v=<?= file_exists(__DIR__ . '/../assets/js/app.js') ? filemtime(__DIR__ . '/../assets/js/app.js') : time() ?>"></script>
     <script>

@@ -56,7 +56,7 @@ function get_user_role_label(?string $role = null): string {
             return 'Administrator';
         case 'accountant':
         default:
-            return 'Lead Accountant';
+            return 'Finance Officer';
     }
 }
 
@@ -80,8 +80,24 @@ function require_admin(): void {
     require_login();
     if (!is_admin()) {
         set_flash('danger', 'Access restricted. You need Administrator privileges to access that section.');
-        header('Location: index.php');
-        exit;
+        if (php_sapi_name() !== 'cli') {
+            header('Location: index.php');
+            exit;
+        }
+    }
+}
+
+/**
+ * Enforce accountant privileges on accounting pages (strictly restricts admin role)
+ */
+function require_accountant(): void {
+    require_login();
+    if (is_admin()) {
+        set_flash('info', 'As an Administrator, you only have access to the Administration module.');
+        if (php_sapi_name() !== 'cli') {
+            header('Location: admin.php');
+            exit;
+        }
     }
 }
 

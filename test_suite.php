@@ -79,6 +79,9 @@ $collected = 600000.0;
 $percent = compute_percentage_collected($contract, $collected);
 assert_test($percent === 60.0, "Percentage Collected = ($collected / $contract) * 100 = $percent%");
 
+$overPercent = compute_percentage_collected(1000000.0, 1500000.0);
+assert_test($overPercent === 100.0, "Percentage Collected is capped at 100% even if amount collected exceeds contract: $overPercent%");
+
 // Balance Collectible = Net Amount - Amount Collected
 $balance = compute_balance_collectible($net, $collected);
 assert_test($balance === 300000.0, "Balance Collectible = Net ($net) - Collected ($collected) = $balance");
@@ -86,16 +89,27 @@ assert_test($balance === 300000.0, "Balance Collectible = Net ($net) - Collected
 $balancePercent = compute_percentage_balance($contract, $balance);
 assert_test($balancePercent === 30.0, "Percentage Balance = ($balance / $contract) * 100 = $balancePercent%");
 
-// --- 5. User Roles & RBAC (Admin & Lead Accountant) ---
-echo "\n--- 5. Testing User Roles & RBAC (Admin & Lead Accountant) ---\n";
+// --- 5. User Roles & RBAC (Admin & Finance Officer) ---
+echo "\n--- 5. Testing User Roles & RBAC (Admin & Finance Officer) ---\n";
 $accountantUser = $db->query("SELECT * FROM users WHERE role = 'accountant' LIMIT 1")->fetch();
-assert_test(!empty($accountantUser), "Lead Accountant account exists in database (User: {$accountantUser['username']})");
+assert_test(!empty($accountantUser), "Finance Officer account exists in database (User: {$accountantUser['username']})");
 
 $_SESSION['user'] = $accountantUser;
 assert_test(!is_outsourced_accountant(), "is_outsourced_accountant() returns false (role removed)");
 assert_test(is_accountant(), "is_accountant() returns true for accountant role");
 assert_test(!is_admin(), "is_admin() strictly prevents admin access for accountant");
-assert_test(get_user_role_label('accountant') === 'Lead Accountant', "Role label returns 'Lead Accountant'");
+assert_test(get_user_role_label('accountant') === 'Finance Officer', "Role label returns 'Finance Officer'");
+
+$adminUser = $db->query("SELECT * FROM users WHERE role = 'admin' LIMIT 1")->fetch();
+assert_test(!empty($adminUser), "Administrator account exists in database (User: {$adminUser['username']})");
+
+$_SESSION['user'] = $adminUser;
+assert_test(is_admin(), "is_admin() returns true for admin role");
+assert_test(!is_accountant(), "is_accountant() returns false for admin role");
+assert_test(get_user_role_label('admin') === 'Administrator', "Role label returns 'Administrator'");
+
+// Restore session user to accountant for remaining tests
+$_SESSION['user'] = $accountantUser;
 
 // --- 6. Workflow Validation: Adding Check & Funding with Cheque Date ---
 echo "\n--- 6. Testing Cheque Processing & Funding Workflow Logic ---\n";
@@ -334,7 +348,37 @@ assert_test($foundTestField === true, "Admin CMS can define dynamic custom field
 
 $renderedHtml = render_custom_fields_html('checks', [$testFieldKey => 'PO-99999']);
 assert_test(strpos($renderedHtml, 'Test Purchase Order') !== false && strpos($renderedHtml, 'PO-99999') !== false, "render_custom_fields_html dynamically outputs custom field input with value");
+
+$pickerHtml = render_custom_field_column_pickers('checks');
+assert_test(strpos($pickerHtml, 'data-report-toggle="cf-test_po_ref"') !== false && strpos($pickerHtml, 'Test Purchase Order') !== false, "render_custom_field_column_pickers outputs checkbox for custom field");
+
+$headerHtml = render_custom_field_table_headers('checks');
+assert_test(strpos($headerHtml, 'col-toggle-cf-test_po_ref') !== false && strpos($headerHtml, 'TEST PURCHASE ORDER') !== false, "render_custom_field_table_headers outputs table header for custom field");
+
+$cellHtml = render_custom_field_table_cells('checks', [$testFieldKey => 'PO-99999']);
+assert_test(strpos($cellHtml, 'col-toggle-cf-test_po_ref') !== false && strpos($cellHtml, 'PO-99999') !== false, "render_custom_field_table_cells outputs table cell with custom field value");
+
+$footerHtml = render_custom_field_table_footers('checks');
+assert_test(strpos($footerHtml, 'col-toggle-cf-test_po_ref') !== false, "render_custom_field_table_footers outputs footer placeholder for custom field");
+
 $db->exec("DELETE FROM custom_fields WHERE field_key = '{$testFieldKey}'");
+
+// --- 11. Testing Check Number 12-Digit Limit & Collections Contract Limit ---
+echo "\n--- 11. Testing Check Number 12-Digit Limit & Collections Contract Limit ---\n";
+$validDigits = strlen(preg_replace('/\D/', '', '001-0019281'));
+assert_test($validDigits <= 12, "Normal check number '001-0019281' has $validDigits digits (<= 12)");
+
+$twelveDigits = strlen(preg_replace('/\D/', '', '123456789012'));
+assert_test($twelveDigits === 12, "Max allowed check number '123456789012' has exactly 12 digits");
+
+$thirteenDigits = strlen(preg_replace('/\D/', '', '1234567890123'));
+assert_test($thirteenDigits > 12, "Over-limit check number has 13 digits (> 12), correctly flagged");
+
+$colContract = 500000.0;
+$colValidAmt = 450000.0;
+$colOverAmt  = 550000.0;
+assert_test($colValidAmt <= $colContract, "Valid collection (₱450,000) does not exceed contract (₱500,000)");
+assert_test($colOverAmt > $colContract, "Excess collection (₱550,000) exceeds contract (₱500,000) and is blocked");
 
 echo "\n=======================================================\n";
 echo "TEST RESULTS: $passed PASSED, $failed FAILED\n";

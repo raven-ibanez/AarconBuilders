@@ -52,6 +52,19 @@ function respond($success, $message, $data = [], $redirectUrl = null) {
 }
 
 try {
+    // Separation of Duties: Admin role is restricted exclusively to system administration
+    $accountingActions = [
+        'add_voucher', 'add_check', 'edit_check', 'update_check_date', 'fund_check', 'void_check',
+        'batch_fund_checks', 'batch_unfund_checks', 'batch_delete_checks', 'batch_update_priority',
+        'mark_voucher_reviewed', 'batch_review_vouchers', 'add_cash_request', 'approve_cash_request',
+        'reject_cash_request', 'delete_cash_request', 'edit_cash_request', 'add_collection',
+        'edit_collection', 'delete_collection'
+    ];
+
+    if (is_admin() && in_array($action, $accountingActions)) {
+        respond(false, 'Access restricted: Administrator role is restricted to system administration and cannot perform accounting operations.', [], '../admin.php');
+    }
+
     switch ($action) {
 
         // ==========================================
@@ -90,6 +103,12 @@ try {
 
             if (empty($checkNumber) || empty($bankName) || empty($payee) || $amount <= 0) {
                 respond(false, 'Please fill in all required fields (Check #, Bank, Payee, Amount, and Issue Date).', [], $redirectUrl);
+            }
+
+            // Enforce 12-digit limit on check number
+            $checkDigits = preg_replace('/\D/', '', $checkNumber);
+            if (strlen($checkDigits) > 12) {
+                respond(false, 'Validation Error: Check Number cannot exceed 12 digits (currently ' . strlen($checkDigits) . ' digits).', [], $redirectUrl);
             }
 
             // Auto-assign voucher number if empty
@@ -247,6 +266,12 @@ try {
 
             if (empty($checkNumber) || empty($bankName) || empty($payee) || $amount <= 0) {
                 respond(false, 'Please fill in check number, bank, payee, and amount.', [], $redirectUrl);
+            }
+
+            // Enforce 12-digit limit on check number
+            $checkDigits = preg_replace('/\D/', '', $checkNumber);
+            if (strlen($checkDigits) > 12) {
+                respond(false, 'Validation Error: Check Number cannot exceed 12 digits (currently ' . strlen($checkDigits) . ' digits).', [], $redirectUrl);
             }
 
             if (!in_array($priorityStatus, ['Standard', 'Prioritized', 'Hold'])) {
@@ -510,6 +535,11 @@ try {
                 $contractAmount = $netAmount;
             }
 
+            // Enforce that Amount Collected cannot exceed Contract Amount
+            if ($contractAmount > 0 && $amount > $contractAmount) {
+                respond(false, 'Validation Error: Amount Collected (' . format_money($amount) . ') cannot exceed Contract Amount (' . format_money($contractAmount) . ').', [], $redirectUrl);
+            }
+
             // Balance Collectible = Net Amount - Amount Collected
             $balanceCollectible = compute_balance_collectible($netAmount, $amount);
 
@@ -577,6 +607,11 @@ try {
             }
             if ($contractAmount <= 0) {
                 $contractAmount = $netAmount;
+            }
+
+            // Enforce that Amount Collected cannot exceed Contract Amount
+            if ($contractAmount > 0 && $amount > $contractAmount) {
+                respond(false, 'Validation Error: Amount Collected (' . format_money($amount) . ') cannot exceed Contract Amount (' . format_money($contractAmount) . ').', [], $redirectUrl);
             }
 
             // Balance Collectible = Net Amount - Amount Collected
@@ -657,8 +692,7 @@ try {
             }
 
             $currentUser = $authResult['user'];
-            $defaultDest = ($currentUser['role'] === 'admin') ? '../admin.php' : '../index.php';
-            $targetUrl = $_SESSION['redirect_after_login'] ?? $defaultDest;
+            $targetUrl = ($currentUser['role'] === 'admin') ? '../admin.php' : ($_SESSION['redirect_after_login'] ?? '../index.php');
             unset($_SESSION['redirect_after_login']);
 
             respond(true, "Welcome back, {$currentUser['full_name']}!", ['user' => $currentUser], $targetUrl);

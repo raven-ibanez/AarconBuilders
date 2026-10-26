@@ -192,6 +192,7 @@ $allTotal = array_sum(array_column($allRequests, 'amount'));
                                     <input type="checkbox" data-report-toggle="cash-date" checked>
                                     <span>Request Date</span>
                                 </label>
+                                <?= render_custom_field_column_pickers('cash_requests') ?>
                             </div>
                         </div>
                     </div>
@@ -216,6 +217,7 @@ $allTotal = array_sum(array_column($allRequests, 'amount'));
                                     <th class="col-toggle-cash-requestedby" style="min-width: 150px;">REQUESTED BY</th>
                                     <th class="col-toggle-cash-desc" style="min-width: 220px;">DESCRIPTION</th>
                                     <th class="col-toggle-cash-date" style="min-width: 110px; text-align: center;">REQUEST DATE</th>
+                                    <?= render_custom_field_table_headers('cash_requests') ?>
                                     <th style="min-width: 120px; text-align: center;" class="no-print">ACTIONS</th>
                                 </tr>
                             </thead>
@@ -243,6 +245,7 @@ $allTotal = array_sum(array_column($allRequests, 'amount'));
                                         <td class="col-toggle-cash-date excel-mono" style="text-align: center; font-size: 0.78rem;">
                                             <?= format_date($req['request_date']) ?>
                                         </td>
+                                        <?= render_custom_field_table_cells('cash_requests', $req['custom_fields'] ?? '') ?>
                                         <td class="action-cell no-print" style="text-align: center;">
                                             <div style="display: flex; gap: 0.25rem; justify-content: center; align-items: center;">
                                                 <button class="btn btn-success btn-sm btn-ajax-approve-cash"
@@ -266,7 +269,9 @@ $allTotal = array_sum(array_column($allRequests, 'amount'));
                                 <tr>
                                     <th colspan="3" style="text-align: right; text-transform: uppercase;">Total Filtered Amount:</th>
                                     <th class="cash-filtered-total excel-num amount-col col-toggle-cash-amount" style="color: #d97706;"><?= format_money($pendingTotal) ?></th>
-                                    <th colspan="4" class="no-print"></th>
+                                    <th colspan="3" class="no-print"></th>
+                                    <?= render_custom_field_table_footers('cash_requests') ?>
+                                    <th class="no-print"></th>
                                 </tr>
                             </tfoot>
                         </table>
@@ -349,6 +354,7 @@ $allTotal = array_sum(array_column($allRequests, 'amount'));
                                     <input type="checkbox" data-report-toggle="cash-status" checked>
                                     <span>Status</span>
                                 </label>
+                                <?= render_custom_field_column_pickers('cash_requests') ?>
                             </div>
                         </div>
                     </div>
@@ -371,6 +377,7 @@ $allTotal = array_sum(array_column($allRequests, 'amount'));
                                     <th class="col-toggle-cash-desc" style="min-width: 220px;">DESCRIPTION</th>
                                     <th class="col-toggle-cash-apprdate" style="min-width: 140px;">APPROVED AT &amp; BY</th>
                                     <th class="col-toggle-cash-status" style="min-width: 90px; text-align: center;">STATUS</th>
+                                    <?= render_custom_field_table_headers('cash_requests') ?>
                                 </tr>
                             </thead>
                             <tbody>
@@ -401,6 +408,7 @@ $allTotal = array_sum(array_column($allRequests, 'amount'));
                                         <td class="col-toggle-cash-status" style="text-align: center;">
                                             <span class="badge badge-funded">Approved</span>
                                         </td>
+                                        <?= render_custom_field_table_cells('cash_requests', $req['custom_fields'] ?? '') ?>
                                     </tr>
                                 <?php endforeach; ?>
                             </tbody>
@@ -409,6 +417,7 @@ $allTotal = array_sum(array_column($allRequests, 'amount'));
                                     <th colspan="3" style="text-align: right; text-transform: uppercase;">Total Approved Cash:</th>
                                     <th class="cash-filtered-total excel-num amount-col col-toggle-cash-amount" style="color: #059669;"><?= format_money($approvedTotal) ?></th>
                                     <th colspan="4" class="no-print"></th>
+                                    <?= render_custom_field_table_footers('cash_requests') ?>
                                 </tr>
                             </tfoot>
                         </table>
@@ -491,6 +500,7 @@ $allTotal = array_sum(array_column($allRequests, 'amount'));
                                     <input type="checkbox" data-report-toggle="cash-status" checked>
                                     <span>Status</span>
                                 </label>
+                                <?= render_custom_field_column_pickers('cash_requests') ?>
                             </div>
                         </div>
                     </div>
@@ -513,6 +523,7 @@ $allTotal = array_sum(array_column($allRequests, 'amount'));
                                     <th class="col-toggle-cash-desc" style="min-width: 220px;">DESCRIPTION</th>
                                     <th class="col-toggle-cash-logdate" style="min-width: 110px; text-align: center;">LOG DATE</th>
                                     <th class="col-toggle-cash-status" style="min-width: 90px; text-align: center;">STATUS</th>
+                                    <?= render_custom_field_table_headers('cash_requests') ?>
                                 </tr>
                             </thead>
                             <tbody>
@@ -554,6 +565,7 @@ $allTotal = array_sum(array_column($allRequests, 'amount'));
                                                 <span class="badge badge-pending">Pending</span>
                                             <?php endif; ?>
                                         </td>
+                                        <?= render_custom_field_table_cells('cash_requests', $req['custom_fields'] ?? '') ?>
                                     </tr>
                                 <?php endforeach; ?>
                             </tbody>
@@ -562,6 +574,7 @@ $allTotal = array_sum(array_column($allRequests, 'amount'));
                                     <th colspan="3" style="text-align: right; text-transform: uppercase;">Total Amount:</th>
                                     <th class="cash-filtered-total excel-num amount-col col-toggle-cash-amount" style="color: #0f172a;"><?= format_money($allTotal) ?></th>
                                     <th colspan="4" class="no-print"></th>
+                                    <?= render_custom_field_table_footers('cash_requests') ?>
                                 </tr>
                             </tfoot>
                         </table>

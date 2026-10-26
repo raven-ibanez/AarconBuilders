@@ -10,20 +10,32 @@ require_once __DIR__ . '/../config/db.php';
 // Enforce authentication on all protected pages
 require_login();
 
+$currentPage = basename($_SERVER['PHP_SELF']);
+
+// Enforce strict Separation of Duties:
+// Administrator role is solely restricted to the Administration module (admin.php)
+if (is_admin() && $currentPage !== 'admin.php') {
+    set_flash('info', 'As an Administrator, you only have access to the Administration module.');
+    if (php_sapi_name() !== 'cli') {
+        header('Location: admin.php');
+        exit;
+    }
+}
+
 $currentUser = current_user();
 $db = get_db();
 
 $pendingChecksCount = 0;
 $pendingCashCount = 0;
 
-try {
-    $pendingChecksCount = (int) $db->query("SELECT COUNT(*) FROM checks WHERE status = 'pending'")->fetchColumn();
-    $pendingCashCount = (int) $db->query("SELECT COUNT(*) FROM cash_requests WHERE status = 'pending'")->fetchColumn();
-} catch (Exception $e) {
-    // Fallback
+if (!is_admin()) {
+    try {
+        $pendingChecksCount = (int) $db->query("SELECT COUNT(*) FROM checks WHERE status = 'pending'")->fetchColumn();
+        $pendingCashCount = (int) $db->query("SELECT COUNT(*) FROM cash_requests WHERE status = 'pending'")->fetchColumn();
+    } catch (Exception $e) {
+        // Fallback
+    }
 }
-
-$currentPage = basename($_SERVER['PHP_SELF']);
 $flash = get_flash();
 $dynamicAppName = get_app_name();
 
@@ -72,59 +84,9 @@ if ($currentUser) {
         <!-- Navigation Menu -->
         <nav class="sidebar-nav">
             <?php if (is_admin()): ?>
-                <!-- ADMIN NAVIGATION -->
+                <!-- ADMIN NAVIGATION: Exclusively the Administration module -->
                 <div class="sidebar-section">
-                    <span class="sidebar-heading">Core</span>
-                    <a href="index.php" class="sidebar-link <?= $currentPage === 'index.php' ? 'active' : '' ?>">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
-                        <span>Dashboard</span>
-                    </a>
-                </div>
-
-                <div class="sidebar-section">
-                    <span class="sidebar-heading">Disbursements</span>
-                    <a href="vouchers.php" class="sidebar-link <?= $currentPage === 'vouchers.php' ? 'active' : '' ?>">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
-                        <span>Check Vouchers</span>
-                    </a>
-                    <a href="checks.php" class="sidebar-link <?= $currentPage === 'checks.php' ? 'active' : '' ?>">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"></rect><line x1="2" y1="10" x2="22" y2="10"></line><line x1="6" y1="15" x2="10" y2="15"></line></svg>
-                        <span>Checks</span>
-                        <?php if ($pendingChecksCount > 0): ?>
-                            <span class="sidebar-badge"><?= $pendingChecksCount ?></span>
-                        <?php endif; ?>
-                    </a>
-                    <a href="cash_requests.php" class="sidebar-link <?= $currentPage === 'cash_requests.php' ? 'active' : '' ?>">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"></rect><circle cx="12" cy="12" r="2"></circle><path d="M6 12h.01M18 12h.01"></path></svg>
-                        <span>Cash Requests</span>
-                        <?php if ($pendingCashCount > 0): ?>
-                            <span class="sidebar-badge"><?= $pendingCashCount ?></span>
-                        <?php endif; ?>
-                    </a>
-                </div>
-
-                <div class="sidebar-section">
-                    <span class="sidebar-heading">Billings &amp; Inflow</span>
-                    <a href="collections.php" class="sidebar-link <?= $currentPage === 'collections.php' ? 'active' : '' ?>">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"></path><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"></path><path d="M18 12a2 2 0 0 0 0 4h4v-4z"></path></svg>
-                        <span>Collections</span>
-                    </a>
-                    <a href="collection_report.php" class="sidebar-link <?= $currentPage === 'collection_report.php' ? 'active' : '' ?>">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="12" y1="18" x2="12" y2="12"></line><line x1="9" y1="15" x2="15" y2="15"></line></svg>
-                        <span>Cashed Report</span>
-                    </a>
-                </div>
-
-                <div class="sidebar-section">
-                    <span class="sidebar-heading">Reports</span>
-                    <a href="disbursement_report.php" class="sidebar-link <?= $currentPage === 'disbursement_report.php' ? 'active' : '' ?>">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
-                        <span>Disbursement Report</span>
-                    </a>
-                </div>
-
-                <div class="sidebar-section">
-                    <span class="sidebar-heading">System</span>
+                    <span class="sidebar-heading">System Management</span>
                     <a href="admin.php" class="sidebar-link <?= $currentPage === 'admin.php' ? 'active' : '' ?>">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
                         <span>Administration</span>
@@ -132,7 +94,7 @@ if ($currentUser) {
                 </div>
 
             <?php else: ?>
-                <!-- LEAD ACCOUNTANT / STANDARD NAVIGATION -->
+                <!-- FINANCE OFFICER / STANDARD NAVIGATION -->
                 <div class="sidebar-section">
                     <span class="sidebar-heading">Core</span>
                     <a href="index.php" class="sidebar-link <?= $currentPage === 'index.php' ? 'active' : '' ?>">

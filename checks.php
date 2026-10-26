@@ -248,6 +248,7 @@ $allChecksTotal = array_sum(array_column($allChecks, 'amount'));
                                     <input type="checkbox" data-report-toggle="chk-amount" checked>
                                     <span>Amount</span>
                                 </label>
+                                <?= render_custom_field_column_pickers('checks') ?>
                             </div>
                         </div>
                     </div>
@@ -276,6 +277,7 @@ $allChecksTotal = array_sum(array_column($allChecks, 'amount'));
                                     <th class="col-toggle-chk-project" style="min-width: 160px;">PROJECT &amp; DISTRICT</th>
                                     <th class="col-toggle-chk-voucher" style="min-width: 110px;">VOUCHER #</th>
                                     <th class="col-toggle-chk-amount" style="min-width: 120px; text-align: right;">AMOUNT</th>
+                                    <?= render_custom_field_table_headers('checks') ?>
                                     <th style="min-width: 135px; text-align: center;" class="no-print">ACTION</th>
                                 </tr>
                             </thead>
@@ -326,6 +328,7 @@ $allChecksTotal = array_sum(array_column($allChecks, 'amount'));
                                             <?php endif; ?>
                                         </td>
                                         <td class="col-toggle-chk-amount excel-num" style="color: #0f172a; font-weight: 700;"><?= format_money($chk['amount']) ?></td>
+                                        <?= render_custom_field_table_cells('checks', $chk['custom_fields'] ?? '') ?>
                                         <td class="action-cell no-print" style="text-align: center;">
                                             <div style="display: flex; gap: 0.25rem; justify-content: center; align-items: center;">
                                                 <button type="button" class="btn btn-outline btn-sm btn-print-check-menu"
@@ -370,6 +373,7 @@ $allChecksTotal = array_sum(array_column($allChecks, 'amount'));
                                     <th class="col-toggle-chk-project"></th>
                                     <th class="col-toggle-chk-voucher" style="text-align: right; text-transform: uppercase;">Total:</th>
                                     <th class="col-toggle-chk-amount excel-num" style="color: #dc2626; font-weight: 800;"><?= format_money($pendingTotal) ?></th>
+                                    <?= render_custom_field_table_footers('checks') ?>
                                     <th class="no-print"></th>
                                 </tr>
                             </tfoot>
@@ -469,6 +473,7 @@ $allChecksTotal = array_sum(array_column($allChecks, 'amount'));
                                     <input type="checkbox" data-report-toggle="chk-status" checked>
                                     <span>Status</span>
                                 </label>
+                                <?= render_custom_field_column_pickers('checks') ?>
                             </div>
                         </div>
                     </div>
@@ -521,6 +526,7 @@ $allChecksTotal = array_sum(array_column($allChecks, 'amount'));
                                     <th class="col-toggle-chk-amount" style="min-width: 120px; text-align: right;">AMOUNT</th>
                                     <th class="col-toggle-chk-funded" style="min-width: 140px;">FUNDED AT &amp; BY</th>
                                     <th class="col-toggle-chk-status" style="min-width: 90px; text-align: center;">STATUS</th>
+                                    <?= render_custom_field_table_headers('checks') ?>
                                     <th style="min-width: 125px; text-align: center;" class="no-print">ACTION</th>
                                 </tr>
                             </thead>
@@ -572,6 +578,7 @@ $allChecksTotal = array_sum(array_column($allChecks, 'amount'));
                                         <td class="col-toggle-chk-status" style="text-align: center;">
                                             <span class="badge badge-funded">Funded</span>
                                         </td>
+                                        <?= render_custom_field_table_cells('checks', $chk['custom_fields'] ?? '') ?>
                                         <td class="action-cell no-print" style="text-align: center;">
                                             <div style="display: flex; gap: 0.25rem; justify-content: center; align-items: center;">
                                                 <button type="button" class="btn btn-outline btn-sm btn-print-check-menu"
@@ -605,6 +612,7 @@ $allChecksTotal = array_sum(array_column($allChecks, 'amount'));
                                     <th class="col-toggle-chk-amount excel-num" style="color: #059669;"><?= format_money($fundedTotal) ?></th>
                                     <th class="col-toggle-chk-funded"></th>
                                     <th class="col-toggle-chk-status"></th>
+                                    <?= render_custom_field_table_footers('checks') ?>
                                     <th class="no-print"></th>
                                 </tr>
                             </tfoot>
@@ -690,6 +698,7 @@ $allChecksTotal = array_sum(array_column($allChecks, 'amount'));
                                     <input type="checkbox" data-report-toggle="chk-amount" checked>
                                     <span>Amount</span>
                                 </label>
+                                <?= render_custom_field_column_pickers('checks') ?>
                             </div>
                         </div>
                     </div>
@@ -744,6 +753,7 @@ $allChecksTotal = array_sum(array_column($allChecks, 'amount'));
                                     <th class="col-toggle-chk-project" style="min-width: 160px;">PROJECT &amp; DISTRICT</th>
                                     <th class="col-toggle-chk-voucher" style="min-width: 110px;">VOUCHER #</th>
                                     <th class="col-toggle-chk-amount" style="min-width: 120px; text-align: right;">AMOUNT</th>
+                                    <?= render_custom_field_table_headers('checks') ?>
                                     <th style="min-width: 180px; text-align: center;" class="no-print">RELEASE DECISION</th>
                                 </tr>
                             </thead>
@@ -777,6 +787,7 @@ $allChecksTotal = array_sum(array_column($allChecks, 'amount'));
                                             <?php endif; ?>
                                         </td>
                                         <td class="col-toggle-chk-amount excel-num" style="color: #dc2626; font-weight: 700;"><?= format_money($chk['amount']) ?></td>
+                                        <?= render_custom_field_table_cells('checks', $chk['custom_fields'] ?? '') ?>
                                         <td class="action-cell no-print" style="text-align: center;">
                                             <div style="display: flex; gap: 0.25rem; justify-content: center; align-items: center; flex-wrap: wrap;">
                                                 <button type="button" class="btn btn-outline btn-sm btn-print-check-menu"
@@ -820,6 +831,7 @@ $allChecksTotal = array_sum(array_column($allChecks, 'amount'));
                                     <th class="col-toggle-chk-project"></th>
                                     <th class="col-toggle-chk-voucher" style="text-align: right; text-transform: uppercase;">Total:</th>
                                     <th class="col-toggle-chk-amount excel-num" style="color: #dc2626;"><?= format_money($holdingTotal) ?></th>
+                                    <?= render_custom_field_table_footers('checks') ?>
                                     <th class="no-print"></th>
                                 </tr>
                             </tfoot>
@@ -909,6 +921,7 @@ $allChecksTotal = array_sum(array_column($allChecks, 'amount'));
                                     <input type="checkbox" data-report-toggle="chk-status" checked>
                                     <span>Status</span>
                                 </label>
+                                <?= render_custom_field_column_pickers('checks') ?>
                             </div>
                         </div>
                     </div>
@@ -957,6 +970,7 @@ $allChecksTotal = array_sum(array_column($allChecks, 'amount'));
                                     <th class="col-toggle-chk-voucher" style="min-width: 110px;">VOUCHER #</th>
                                     <th class="col-toggle-chk-amount" style="min-width: 120px; text-align: right;">AMOUNT</th>
                                     <th class="col-toggle-chk-status" style="min-width: 90px; text-align: center;">STATUS</th>
+                                    <?= render_custom_field_table_headers('checks') ?>
                                     <th style="min-width: 135px; text-align: center;" class="no-print">ACTION</th>
                                 </tr>
                             </thead>
@@ -1008,6 +1022,7 @@ $allChecksTotal = array_sum(array_column($allChecks, 'amount'));
                                                 <span class="badge badge-pending">Pending</span>
                                             <?php endif; ?>
                                         </td>
+                                        <?= render_custom_field_table_cells('checks', $chk['custom_fields'] ?? '') ?>
                                         <td class="action-cell no-print" style="text-align: center;">
                                             <div style="display: flex; gap: 0.25rem; justify-content: center; align-items: center; flex-wrap: wrap;">
                                                 <button type="button" class="btn btn-outline btn-sm btn-print-check-menu"
@@ -1047,6 +1062,7 @@ $allChecksTotal = array_sum(array_column($allChecks, 'amount'));
                                     <th class="col-toggle-chk-voucher" style="text-align: right; text-transform: uppercase;">Total:</th>
                                     <th class="col-toggle-chk-amount excel-num" style="color: #0f172a;"><?= format_money(array_sum(array_column($allChecks, 'amount'))) ?></th>
                                     <th class="col-toggle-chk-status"></th>
+                                    <?= render_custom_field_table_footers('checks') ?>
                                     <th class="no-print"></th>
                                 </tr>
                             </tfoot>

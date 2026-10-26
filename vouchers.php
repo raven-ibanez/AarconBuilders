@@ -224,6 +224,7 @@ $vouchers = $stmt->fetchAll();
                             <input type="checkbox" data-report-toggle="vch-status" checked>
                             <span>Status</span>
                         </label>
+                        <?= render_custom_field_column_pickers('checks') ?>
                     </div>
                 </div>
             </div>
@@ -251,6 +252,7 @@ $vouchers = $stmt->fetchAll();
                             <th class="col-toggle-vch-priority" style="min-width: 85px; text-align: center;">PRIORITY</th>
                             <th class="col-toggle-vch-amount" style="min-width: 120px; text-align: right;">AMOUNT</th>
                             <th class="col-toggle-vch-status" style="min-width: 100px; text-align: center;">STATUS</th>
+                            <?= render_custom_field_table_headers('checks') ?>
                             <th style="min-width: 140px; text-align: center;" class="no-print">ACTION</th>
                         </tr>
                     </thead>
@@ -355,7 +357,7 @@ $vouchers = $stmt->fetchAll();
                                         </span>
                                     <?php endif; ?>
                                 </td>
-
+                                <?= render_custom_field_table_cells('checks', $v['custom_fields'] ?? '') ?>
                                 <!-- 11. Actions -->
                                 <td style="text-align: center;" class="no-print">
                                     <div style="display: flex; gap: 0.25rem; justify-content: center; align-items: center;">
@@ -399,6 +401,7 @@ $vouchers = $stmt->fetchAll();
                             <th class="col-toggle-vch-priority" style="text-align: right; text-transform: uppercase; font-size: 0.76rem; color: #475569;">TOTAL:</th>
                             <th class="col-toggle-vch-amount excel-num" style="color: #dc2626; font-weight: 800;"><?= format_money($totalVoucherAmount) ?></th>
                             <th class="col-toggle-vch-status"></th>
+                            <?= render_custom_field_table_footers('checks') ?>
                             <th class="no-print"></th>
                         </tr>
                     </tfoot>

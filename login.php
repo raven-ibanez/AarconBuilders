@@ -427,7 +427,7 @@ $appTagline = function_exists('get_system_setting') ? get_system_setting('compan
                     <div style="font-weight: 600; color: var(--bw-text-muted); margin-bottom: 0.5rem; text-align: center;">System Role Logins:</div>
                     <div style="display: flex; gap: 0.35rem; justify-content: center; flex-wrap: wrap;">
                         <button type="button" class="btn btn-outline btn-sm" onclick="quickFill('admin', 'admin123')" style="font-size: 0.75rem; padding: 3px 8px;">Admin</button>
-                        <button type="button" class="btn btn-outline btn-sm" onclick="quickFill('accountant', 'accountant123')" style="font-size: 0.75rem; padding: 3px 8px;">Lead Accountant</button>
+                        <button type="button" class="btn btn-outline btn-sm" onclick="quickFill('accountant', 'accountant123')" style="font-size: 0.75rem; padding: 3px 8px;">Finance Officer</button>
                     </div>
                 </div>
             </form>

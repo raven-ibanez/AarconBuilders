@@ -6,6 +6,16 @@
 
 require_once __DIR__ . '/config/config.php';
 require_once __DIR__ . '/config/db.php';
+require_once __DIR__ . '/includes/auth.php';
+
+require_login();
+if (is_admin()) {
+    set_flash('info', 'As an Administrator, you only have access to the Administration module.');
+    if (php_sapi_name() !== 'cli') {
+        header('Location: admin.php');
+        exit;
+    }
+}
 
 $db = get_db();
 
